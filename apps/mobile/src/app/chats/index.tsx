@@ -1,25 +1,28 @@
 import { useRouter } from 'expo-router';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTranslation } from 'react-i18next';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Brand, MaxContentWidth, Spacing } from '@/constants/theme';
 import { useMyPlanChats } from '@/hooks/use-plan-chat';
 import { formatPlanDateTime } from '@/lib/format-date';
+import { userFacingError } from '@/lib/user-facing-error';
 
 export default function ChatsScreen() {
   const router = useRouter();
+  const { t } = useTranslation();
   const chats = useMyPlanChats();
   return (
     <ThemedView style={styles.screen}><SafeAreaView style={styles.safeArea}><ScrollView contentContainerStyle={styles.content}>
-      <ThemedText style={styles.eyebrow}>ORBIT</ThemedText>
-      <ThemedText type="subtitle">Your circles</ThemedText>
-      <ThemedText themeColor="textSecondary">Coordinate plans you&apos;re attending.</ThemedText>
+      <ThemedText style={styles.eyebrow}>{t('orbit.eyebrow')}</ThemedText>
+      <ThemedText type="subtitle">{t('orbit.title')}</ThemedText>
+      <ThemedText themeColor="textSecondary">{t('orbit.subtitle')}</ThemedText>
       {chats.isLoading && <ActivityIndicator />}
-      {chats.error && <ThemedView type="backgroundElement" style={styles.state}><ThemedText type="smallBold">Orbits couldn&apos;t load</ThemedText><ThemedText type="small" themeColor="textSecondary">{chats.error.message}</ThemedText><Pressable onPress={() => void chats.refetch()}><ThemedText type="linkPrimary">Try again</ThemedText></Pressable></ThemedView>}
-      {!chats.isLoading && !chats.error && !chats.data?.length && <ThemedView type="backgroundElement" style={styles.state}><ThemedText type="smallBold">No active Orbits yet</ThemedText><ThemedText type="small" themeColor="textSecondary">Attend a nearby plan to open a temporary group.</ThemedText><Pressable onPress={() => router.push('/')}><ThemedText type="linkPrimary">See what&apos;s happening</ThemedText></Pressable></ThemedView>}
-      {chats.data?.map((chat) => <Pressable key={chat.plan_id} onPress={() => router.push(`/chats/${chat.plan_id}`)}><ThemedView type="backgroundElement" style={styles.chat}><ThemedText type="smallBold">{chat.title}</ThemedText><ThemedText type="small" themeColor="textSecondary" numberOfLines={1}>{chat.last_message ?? 'Plan chat is ready'}</ThemedText><ThemedText type="small" themeColor="textSecondary">{formatPlanDateTime(chat.starts_at)}</ThemedText></ThemedView></Pressable>)}
+      {chats.error && <ThemedView type="backgroundElement" style={styles.state}><ThemedText type="smallBold">{t('orbit.loadError')}</ThemedText><ThemedText type="small" themeColor="textSecondary">{userFacingError(chats.error, t('orbit.loadError'))}</ThemedText><Pressable onPress={() => void chats.refetch()}><ThemedText type="linkPrimary">{t('tryAgain')}</ThemedText></Pressable></ThemedView>}
+      {!chats.isLoading && !chats.error && !chats.data?.length && <ThemedView type="backgroundElement" style={styles.state}><ThemedText type="smallBold">{t('orbit.emptyTitle')}</ThemedText><ThemedText type="small" themeColor="textSecondary">{t('orbit.emptyBody')}</ThemedText><Pressable onPress={() => router.push('/')}><ThemedText type="linkPrimary">{t('orbit.discover')}</ThemedText></Pressable></ThemedView>}
+      {chats.data?.map((chat) => <Pressable key={chat.plan_id} onPress={() => router.push(`/chats/${chat.plan_id}`)}><ThemedView type="backgroundElement" style={styles.chat}><ThemedText type="smallBold">{chat.title}</ThemedText><ThemedText type="small" themeColor="textSecondary" numberOfLines={1}>{chat.last_message ?? t('orbit.chatReady')}</ThemedText><ThemedText type="small" themeColor="textSecondary">{formatPlanDateTime(chat.starts_at)}</ThemedText></ThemedView></Pressable>)}
     </ScrollView></SafeAreaView></ThemedView>
   );
 }
