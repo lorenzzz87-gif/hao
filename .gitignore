@@ -1,0 +1,13 @@
+.DS_Store
+.env
+.env.local
+.env.*.local
+node_modules/
+coverage/
+dist/
+.expo/
+supabase/.temp/
+tmp/
+hao-auth-mobile.png
+hao-brand-comparison.png
+hao-home-mobile.png

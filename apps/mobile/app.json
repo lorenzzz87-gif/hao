@@ -1,0 +1,49 @@
+{
+  "expo": {
+    "name": "HAO",
+    "slug": "hao",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/brand/hao-icon-square.png",
+    "scheme": "hao",
+    "userInterfaceStyle": "light",
+    "ios": {
+      "icon": "./assets/brand/hao-icon-square.png"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#FAF8F4",
+        "foregroundImage": "./assets/brand/hao-icon-square.png"
+      },
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "output": "static",
+      "favicon": "./assets/brand/hao-favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Allow HAO to use your location to show nearby plans. Your live location is never shown to other people."
+        }
+      ],
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#FAF8F4",
+          "android": {
+            "image": "./assets/brand/hao-wordmark.png",
+            "imageWidth": 180
+          }
+        }
+      ],
+      "expo-localization"
+    ],
+    "experiments": {
+      "typedRoutes": true,
+      "reactCompiler": true
+    }
+  }
+}

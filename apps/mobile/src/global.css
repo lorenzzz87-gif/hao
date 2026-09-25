@@ -1,0 +1,24 @@
+@import 'leaflet/dist/leaflet.css';
+
+:root {
+  --font-display:
+    Inter, 'SF Pro Display', 'SF Pro Rounded', ui-sans-serif, system-ui, sans-serif, Apple Color Emoji, Segoe UI Emoji,
+    Segoe UI Symbol, Noto Color Emoji;
+  --font-mono:
+    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, Courier New, monospace;
+  --font-rounded: 'SF Pro Rounded', 'Hiragino Maru Gothic ProN', Meiryo, 'MS PGothic', sans-serif;
+  --font-serif: Georgia, 'Times New Roman', serif;
+}
+
+.leaflet-container {
+  outline: none;
+  font-family: var(--font-display);
+}
+
+.leaflet-control-zoom a {
+  color: #0b0b0c;
+}
+
+.leaflet-control-attribution {
+  font-size: 9px;
+}
