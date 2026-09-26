@@ -2,6 +2,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -10,18 +11,19 @@ import { supabase } from '@/lib/supabase';
 import { userFacingError } from '@/lib/user-facing-error';
 import { useLocationStore } from '@/stores/location-store';
 
-type TimeChoice = { label: string; minutes: number };
-const baseTimes: TimeChoice[] = [{ label: 'In 30 min', minutes: 30 }, { label: 'In 1 hour', minutes: 60 }, { label: 'In 2 hours', minutes: 120 }];
+type TimeChoice = { key: string; minutes: number };
+const baseTimes: TimeChoice[] = [{ key: 'in30', minutes: 30 }, { key: 'in1h', minutes: 60 }, { key: 'in2h', minutes: 120 }];
 
 function getTimeChoices(): TimeChoice[] {
   const now = new Date();
   const tonight = new Date(now);
   tonight.setHours(19, 0, 0, 0);
   const minutes = Math.round((tonight.getTime() - now.getTime()) / 60_000);
-  return minutes >= 15 && minutes <= 360 ? [...baseTimes, { label: 'Tonight', minutes }] : baseTimes;
+  return minutes >= 15 && minutes <= 360 ? [...baseTimes, { key: 'tonight', minutes }] : baseTimes;
 }
 
 export function CreatePlanForm() {
+  const { t } = useTranslation();
   const router = useRouter();
   const queryClient = useQueryClient();
   const coordinates = useLocationStore((state) => state.coordinates)!;
@@ -63,7 +65,7 @@ export function CreatePlanForm() {
     });
     setBusy(false);
     if (result.error) {
-      setError(userFacingError(result.error, 'The plan could not be created. Please review the details and try again.'));
+      setError(userFacingError(result.error, t('createPlan.createError')));
       return;
     }
     await queryClient.invalidateQueries({ queryKey: ['nearby-plans'] });
@@ -73,39 +75,39 @@ export function CreatePlanForm() {
   return (
     <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
       <View style={styles.section}>
-        <ThemedText type="smallBold">What do you want to do?</ThemedText>
+        <ThemedText type="smallBold">{t('createPlan.activity')}</ThemedText>
         {interests.isLoading ? <ActivityIndicator /> : <ThemedView style={styles.options}>{interests.data?.filter((item) => item.slug !== 'anything').map((item) => <Pressable key={item.slug} onPress={() => setActivity(item.slug)} style={[styles.chip, activity === item.slug && styles.chipSelected]}><ThemedText type="small">{item.label}</ThemedText></Pressable>)}</ThemedView>}
       </View>
 
       <View style={styles.section}>
-        <ThemedText type="smallBold">When?</ThemedText>
-        <ThemedView style={styles.options}>{timeChoices.map((choice) => <Pressable key={choice.label} onPress={() => setMinutes(choice.minutes)} style={[styles.chip, minutes === choice.minutes && styles.chipSelected]}><ThemedText type="small">{choice.label}</ThemedText></Pressable>)}</ThemedView>
+        <ThemedText type="smallBold">{t('createPlan.when')}</ThemedText>
+        <ThemedView style={styles.options}>{timeChoices.map((choice) => <Pressable key={choice.key} onPress={() => setMinutes(choice.minutes)} style={[styles.chip, minutes === choice.minutes && styles.chipSelected]}><ThemedText type="small">{t(`createPlan.${choice.key}`)}</ThemedText></Pressable>)}</ThemedView>
       </View>
 
       <View style={styles.section}>
-        <ThemedText type="smallBold">Public meeting place</ThemedText>
-        <ThemedText type="small" themeColor="textSecondary">Choose a real café, park, or other well-lit public place. HAO shows only an approximate 400 m meeting area until verified venue search is connected.</ThemedText>
-        <TextInput accessibilityLabel="Venue name" placeholder="Venue name" value={venueName} onChangeText={setVenueName} maxLength={120} style={styles.input} />
-        <TextInput accessibilityLabel="Venue address" placeholder="Address (optional)" value={venueAddress} onChangeText={setVenueAddress} maxLength={240} style={styles.input} />
+        <ThemedText type="smallBold">{t('createPlan.publicPlace')}</ThemedText>
+        <ThemedText type="small" themeColor="textSecondary">{t('createPlan.placeHelp')}</ThemedText>
+        <TextInput accessibilityLabel={t('createPlan.venueName')} placeholder={t('createPlan.venueName')} value={venueName} onChangeText={setVenueName} maxLength={120} style={styles.input} />
+        <TextInput accessibilityLabel={t('createPlan.venueAddress')} placeholder={t('createPlan.venueAddress')} value={venueAddress} onChangeText={setVenueAddress} maxLength={240} style={styles.input} />
       </View>
 
       <View style={styles.section}>
-        <ThemedText type="smallBold">Group size</ThemedText>
+        <ThemedText type="smallBold">{t('createPlan.groupSize')}</ThemedText>
         <ThemedView style={styles.counter}>
-          <Pressable accessibilityLabel="Decrease group size" onPress={() => setMaxParticipants((value) => Math.max(2, value - 1))} style={styles.counterButton}><ThemedText>−</ThemedText></Pressable>
-          <ThemedText>{maxParticipants} people</ThemedText>
-          <Pressable accessibilityLabel="Increase group size" onPress={() => setMaxParticipants((value) => Math.min(12, value + 1))} style={styles.counterButton}><ThemedText>+</ThemedText></Pressable>
+          <Pressable accessibilityLabel={t('createPlan.decrease')} onPress={() => setMaxParticipants((value) => Math.max(2, value - 1))} style={styles.counterButton}><ThemedText>−</ThemedText></Pressable>
+          <ThemedText>{t('createPlan.people', { count: maxParticipants })}</ThemedText>
+          <Pressable accessibilityLabel={t('createPlan.increase')} onPress={() => setMaxParticipants((value) => Math.min(12, value + 1))} style={styles.counterButton}><ThemedText>+</ThemedText></Pressable>
         </ThemedView>
       </View>
 
       <View style={styles.section}>
-        <ThemedText type="smallBold">Add a note</ThemedText>
-        <TextInput accessibilityLabel="Plan note" placeholder="Optional details" value={note} onChangeText={setNote} maxLength={1000} multiline style={[styles.input, styles.note]} />
+        <ThemedText type="smallBold">{t('createPlan.addNote')}</ThemedText>
+        <TextInput accessibilityLabel={t('createPlan.planNote')} placeholder={t('createPlan.optionalDetails')} value={note} onChangeText={setNote} maxLength={1000} multiline style={[styles.input, styles.note]} />
         <ThemedText type="small" themeColor="textSecondary">{note.length}/1000</ThemedText>
       </View>
 
-      {(error || interests.error) && <ThemedText type="small" style={styles.error}>{error ?? userFacingError(interests.error, 'Activities could not load. Please try again.')}</ThemedText>}
-      <Pressable accessibilityRole="button" disabled={!valid || busy} onPress={() => void submit()} style={[styles.submit, (!valid || busy) && styles.disabled]}>{busy ? <ActivityIndicator color="#FFFFFF" /> : <ThemedText style={styles.submitText}>Host this plan</ThemedText>}</Pressable>
+      {(error || interests.error) && <ThemedText type="small" style={styles.error}>{error ?? userFacingError(interests.error, t('createPlan.activitiesError'))}</ThemedText>}
+      <Pressable accessibilityRole="button" disabled={!valid || busy} onPress={() => void submit()} style={[styles.submit, (!valid || busy) && styles.disabled]}>{busy ? <ActivityIndicator color="#FFFFFF" /> : <ThemedText style={styles.submitText}>{t('createPlan.host')}</ThemedText>}</Pressable>
     </ScrollView>
   );
 }

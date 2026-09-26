@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTranslation } from 'react-i18next';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -13,6 +14,7 @@ import { userFacingError } from '@/lib/user-facing-error';
 const languages = [{ code: 'en', label: 'English' }, { code: 'it', label: 'Italiano' }, { code: 'zh', label: '中文' }];
 
 export function OnboardingScreen({ onCompleted }: { onCompleted: () => void }) {
+  const { t } = useTranslation();
   const [name, setName] = useState('');
   const [birthDate, setBirthDate] = useState('');
   const [language, setLanguage] = useState('en');
@@ -39,14 +41,14 @@ export function OnboardingScreen({ onCompleted }: { onCompleted: () => void }) {
     const termsResult = await supabase.rpc('accept_community_terms', { p_version: '2026-09-24' });
     if (termsResult.error) {
       setBusy(false);
-      setError(userFacingError(termsResult.error, 'The community terms could not be accepted. Please try again.'));
+      setError(userFacingError(termsResult.error, t('onboarding.termsError')));
       return;
     }
     const { error: submitError } = await supabase.rpc('complete_onboarding', {
       display_name: name.trim(), birth_date: birthDate, primary_language: language, interest_slugs: selected,
     });
     setBusy(false);
-    if (submitError) setError(userFacingError(submitError, 'Your profile could not be completed. Please review the details.'));
+    if (submitError) setError(userFacingError(submitError, t('onboarding.profileError')));
     else { await i18n.changeLanguage(language); onCompleted(); }
   }
 
@@ -56,17 +58,17 @@ export function OnboardingScreen({ onCompleted }: { onCompleted: () => void }) {
     <ThemedView style={styles.screen}>
       <SafeAreaView style={styles.safeArea}>
         <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-          <ThemedText type="subtitle">Tell us about you</ThemedText>
-          <ThemedText themeColor="textSecondary">This keeps nearby plans relevant and the community 18+.</ThemedText>
-          <TextInput accessibilityLabel="Display name" placeholder="Display name" value={name} onChangeText={setName} style={styles.input} maxLength={60} />
-          <TextInput accessibilityLabel="Birth date" placeholder="Birth date · YYYY-MM-DD" value={birthDate} onChangeText={setBirthDate} style={styles.input} keyboardType="numbers-and-punctuation" maxLength={10} />
-          <ThemedText type="smallBold">Primary language</ThemedText>
+          <ThemedText type="subtitle">{t('onboarding.title')}</ThemedText>
+          <ThemedText themeColor="textSecondary">{t('onboarding.subtitle')}</ThemedText>
+          <TextInput accessibilityLabel={t('onboarding.displayName')} placeholder={t('onboarding.displayName')} value={name} onChangeText={setName} style={styles.input} maxLength={60} />
+          <TextInput accessibilityLabel={t('onboarding.birthDate')} placeholder={t('onboarding.birthDatePlaceholder')} value={birthDate} onChangeText={setBirthDate} style={styles.input} keyboardType="numbers-and-punctuation" maxLength={10} />
+          <ThemedText type="smallBold">{t('onboarding.primaryLanguage')}</ThemedText>
           <ThemedView style={styles.options}>{languages.map((item) => <Pressable key={item.code} onPress={() => setLanguage(item.code)} style={[styles.chip, language === item.code && styles.chipSelected]}><ThemedText type="small">{item.label}</ThemedText></Pressable>)}</ThemedView>
-          <ThemedText type="smallBold">Choose 3–5 interests</ThemedText>
+          <ThemedText type="smallBold">{t('onboarding.chooseInterests')}</ThemedText>
           {interests.isLoading ? <ActivityIndicator /> : <ThemedView style={styles.options}>{interests.data?.map((item) => <Pressable key={item.slug} onPress={() => toggleInterest(item.slug)} style={[styles.chip, selected.includes(item.slug) && styles.chipSelected]}><ThemedText type="small">{item.label}</ThemedText></Pressable>)}</ThemedView>}
-          <Pressable accessibilityRole="checkbox" accessibilityState={{ checked: acceptedTerms }} onPress={() => setAcceptedTerms((value) => !value)} style={styles.terms}><ThemedView style={[styles.checkbox, acceptedTerms && styles.checkboxChecked]}><ThemedText style={styles.checkmark}>{acceptedTerms ? '✓' : ''}</ThemedText></ThemedView><ThemedText type="small" style={styles.termsText}>I agree to HAO&apos;s Community Terms: zero tolerance for abusive, hateful, sexual, threatening, or unsafe content. Reports may lead to removal or suspension.</ThemedText></Pressable>
-          {(error || interests.error) && <ThemedText type="small" style={styles.error}>{error ?? userFacingError(interests.error, 'Interests could not load. Please try again.')}</ThemedText>}
-          <Pressable accessibilityRole="button" disabled={!valid || busy} onPress={complete} style={[styles.button, (!valid || busy) && styles.disabled]}>{busy ? <ActivityIndicator color="#FFFFFF" /> : <ThemedText style={styles.buttonText}>Enter HAO</ThemedText>}</Pressable>
+          <Pressable accessibilityRole="checkbox" accessibilityState={{ checked: acceptedTerms }} onPress={() => setAcceptedTerms((value) => !value)} style={styles.terms}><ThemedView style={[styles.checkbox, acceptedTerms && styles.checkboxChecked]}><ThemedText style={styles.checkmark}>{acceptedTerms ? '✓' : ''}</ThemedText></ThemedView><ThemedText type="small" style={styles.termsText}>{t('onboarding.terms')}</ThemedText></Pressable>
+          {(error || interests.error) && <ThemedText type="small" style={styles.error}>{error ?? userFacingError(interests.error, t('onboarding.interestsError'))}</ThemedText>}
+          <Pressable accessibilityRole="button" disabled={!valid || busy} onPress={complete} style={[styles.button, (!valid || busy) && styles.disabled]}>{busy ? <ActivityIndicator color="#FFFFFF" /> : <ThemedText style={styles.buttonText}>{t('onboarding.enter')}</ThemedText>}</Pressable>
         </ScrollView>
       </SafeAreaView>
     </ThemedView>
