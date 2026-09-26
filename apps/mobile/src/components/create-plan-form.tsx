@@ -27,6 +27,8 @@ export function CreatePlanForm() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const coordinates = useLocationStore((state) => state.coordinates)!;
+  const locationSource = useLocationStore((state) => state.source);
+  const areaLabel = useLocationStore((state) => state.areaLabel);
   const [activity, setActivity] = useState<string | null>(null);
   const [minutes, setMinutes] = useState(60);
   const [venueName, setVenueName] = useState('');
@@ -44,7 +46,8 @@ export function CreatePlanForm() {
     },
   });
 
-  const valid = Boolean(activity && venueName.trim() && note.length <= 1000);
+  const resolvedVenueName = locationSource === 'manual' ? t('createPlan.areaVenue', { area: areaLabel ?? '' }) : venueName.trim();
+  const valid = Boolean(activity && resolvedVenueName && note.length <= 1000);
 
   async function submit() {
     if (!activity || !valid) return;
@@ -54,7 +57,7 @@ export function CreatePlanForm() {
     const result = await supabase.rpc('create_plan', {
       p_activity_type: activity,
       p_starts_at: startsAt,
-      p_venue_name: venueName.trim(),
+      p_venue_name: resolvedVenueName,
       p_venue_address: null,
       p_latitude: coordinates.latitude,
       p_longitude: coordinates.longitude,
@@ -85,8 +88,10 @@ export function CreatePlanForm() {
 
       <View style={styles.section}>
         <ThemedText type="smallBold">{t('createPlan.publicPlace')}</ThemedText>
-        <ThemedText type="small" themeColor="textSecondary">{t('createPlan.placeHelp')}</ThemedText>
-        <TextInput accessibilityLabel={t('createPlan.venueName')} placeholder={t('createPlan.venueName')} value={venueName} onChangeText={setVenueName} maxLength={120} style={styles.input} />
+        <ThemedText type="small" themeColor="textSecondary">{t(locationSource === 'manual' ? 'createPlan.manualAreaHelp' : 'createPlan.placeHelp', { area: areaLabel ?? '' })}</ThemedText>
+        {locationSource === 'manual'
+          ? <ThemedView type="backgroundElement" style={styles.areaCard}><ThemedText type="smallBold">{resolvedVenueName}</ThemedText><ThemedText type="small" themeColor="textSecondary">{t('createPlan.exactPlaceInChat')}</ThemedText></ThemedView>
+          : <TextInput accessibilityLabel={t('createPlan.venueName')} placeholder={t('createPlan.venueName')} value={venueName} onChangeText={setVenueName} maxLength={120} style={styles.input} />}
       </View>
 
       <View style={styles.section}>
@@ -116,6 +121,7 @@ const styles = StyleSheet.create({
   chip: { paddingHorizontal: Spacing.three, paddingVertical: Spacing.two, borderRadius: 20, borderWidth: 1, borderColor: Brand.border },
   chipSelected: { borderColor: Brand.primary, backgroundColor: Brand.primarySoft },
   input: { minHeight: 52, borderWidth: 1, borderColor: Brand.border, borderRadius: 14, paddingHorizontal: Spacing.three, backgroundColor: '#FFFFFF', color: Brand.navy, fontSize: 16 },
+  areaCard: { minHeight: 64, borderWidth: 1, borderColor: Brand.border, borderRadius: 14, padding: Spacing.three, justifyContent: 'center', gap: Spacing.one },
   note: { minHeight: 100, paddingTop: Spacing.three, textAlignVertical: 'top' },
   counter: { flexDirection: 'row', alignItems: 'center', gap: Spacing.three },
   counterButton: { width: 44, height: 44, borderRadius: 22, borderWidth: 1, borderColor: Brand.border, alignItems: 'center', justifyContent: 'center' },

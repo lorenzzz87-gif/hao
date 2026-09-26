@@ -13,6 +13,7 @@ export function PlanMap() {
   const router = useRouter();
   const { t } = useTranslation();
   const coordinates = useLocationStore((state) => state.coordinates)!;
+  const source = useLocationStore((state) => state.source);
   const plans = useNearbyPlans();
 
   if (plans.isLoading) return <ThemedView style={styles.center}><ActivityIndicator /></ThemedView>;
@@ -20,7 +21,8 @@ export function PlanMap() {
 
   return (
     <ThemedView style={styles.container}>
-      <MapView style={styles.map} showsUserLocation initialRegion={{ ...coordinates, latitudeDelta: 0.08, longitudeDelta: 0.08 }}>
+      <MapView style={styles.map} showsUserLocation={source === 'device'} initialRegion={{ ...coordinates, latitudeDelta: 0.08, longitudeDelta: 0.08 }}>
+        {source === 'manual' && <Circle center={coordinates} radius={700} fillColor="rgba(255,122,26,0.10)" strokeColor="#FF7A1A" strokeWidth={2} />}
         {plans.data?.map((plan) => <Circle key={plan.id} center={{ latitude: plan.latitude, longitude: plan.longitude }} radius={400} fillColor="rgba(255,122,26,0.18)" strokeColor="#FF7A1A" strokeWidth={2} />)}
       </MapView>
       {!plans.data?.length && (

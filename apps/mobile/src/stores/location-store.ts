@@ -1,5 +1,7 @@
 import * as Location from 'expo-location';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
+import { createJSONStorage, persist } from 'zustand/middleware';
 
 type Coordinates = { latitude: number; longitude: number };
 type LocationStatus = 'idle' | 'loading' | 'ready' | 'denied' | 'error';
@@ -13,9 +15,10 @@ type LocationState = {
   error: string | null;
   locate: () => Promise<void>;
   chooseArea: (coordinates: Coordinates, label: string) => void;
+  clearArea: () => void;
 };
 
-export const useLocationStore = create<LocationState>((set) => ({
+export const useLocationStore = create<LocationState>()(persist((set) => ({
   coordinates: null,
   source: null,
   areaLabel: null,
@@ -44,4 +47,11 @@ export const useLocationStore = create<LocationState>((set) => ({
     }
   },
   chooseArea: (coordinates, areaLabel) => set({ coordinates, source: 'manual', areaLabel, status: 'ready', error: null }),
+  clearArea: () => set({ coordinates: null, source: null, areaLabel: null, status: 'idle', error: null }),
+}), {
+  name: 'hao-manual-area',
+  storage: createJSONStorage(() => AsyncStorage),
+  partialize: (state) => state.source === 'manual'
+    ? { coordinates: state.coordinates, source: state.source, areaLabel: state.areaLabel, status: 'ready' as const, error: null }
+    : { coordinates: null, source: null, areaLabel: null, status: 'idle' as const, error: null },
 }));

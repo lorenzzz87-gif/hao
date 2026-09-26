@@ -2,7 +2,7 @@
 type: decision
 status: active
 created: 2026-09-06
-updated: 2026-09-06
+updated: 2026-09-26
 sources:
   - ../../../NOW_V1_DEVELOPMENT_SPEC.md
   - ../../../NOW_AI_ARCHITECTURE_AND_COST.md
@@ -28,6 +28,7 @@ NOW is built as vertical slices toward a real Successful Meet. Expo SDK 55 owns 
 - Every exposed table has RLS; private location and AI cost data are owner/admin only.
 - Start single-threaded. Parallelize mobile, backend, and platform work only after contracts and migrations stabilize.
 - Phone OTP is the first closed-test authentication path. Apple and Google can be added after production credentials and redirect URLs are available.
+- Users can browse and create broad public-area plans after manually choosing a launch city. Manual city coordinates never represent the user and cannot be used for “I'm Free” matching or check-in; those actions require fresh foreground location.
 
 ## Delivery order
 

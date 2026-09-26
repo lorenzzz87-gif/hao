@@ -33,6 +33,9 @@ export default function FreeScreen() {
   const { t } = useTranslation();
   const router = useRouter();
   const coordinates = useLocationStore((state) => state.coordinates);
+  const locationSource = useLocationStore((state) => state.source);
+  const locate = useLocationStore((state) => state.locate);
+  const locationStatus = useLocationStore((state) => state.status);
   const createAvailability = useCreateAvailability();
   const [minutes, setMinutes] = useState(60);
   const [maxDistanceM, setMaxDistanceM] = useState(2000);
@@ -65,6 +68,8 @@ export default function FreeScreen() {
   };
 
   if (!coordinates) return <ThemedView style={styles.screen}><SafeAreaView style={styles.safeArea}><View style={styles.locationHeader}><Pressable onPress={() => router.back()}><ThemedText type="linkPrimary">{t('freeScreen.back')}</ThemedText></Pressable><ThemedText type="subtitle">{t('freeScreen.title')}</ThemedText></View><View style={styles.location}><LocationPrompt /></View></SafeAreaView></ThemedView>;
+
+  if (locationSource === 'manual') return <ThemedView style={styles.screen}><SafeAreaView style={styles.safeArea}><View style={styles.locationHeader}><Pressable onPress={() => router.back()}><ThemedText type="linkPrimary">{t('freeScreen.back')}</ThemedText></Pressable><ThemedText type="subtitle">{t('freeScreen.title')}</ThemedText><ThemedText themeColor="textSecondary">{t('freeScreen.preciseLocationHelp')}</ThemedText><Pressable accessibilityRole="button" disabled={locationStatus === 'loading'} onPress={() => void locate()} style={[styles.primary, locationStatus === 'loading' && styles.disabled]}>{locationStatus === 'loading' ? <ActivityIndicator color="#FFFFFF" /> : <ThemedText style={styles.primaryText}>{t('location.use')}</ThemedText>}</Pressable></View></SafeAreaView></ThemedView>;
 
   if (createAvailability.data) {
     const result = createAvailability.data;

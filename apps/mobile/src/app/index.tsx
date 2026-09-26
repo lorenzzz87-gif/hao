@@ -18,6 +18,9 @@ export default function NowScreen() {
   const router = useRouter();
   const { t } = useTranslation();
   const coordinates = useLocationStore((state) => state.coordinates);
+  const source = useLocationStore((state) => state.source);
+  const areaLabel = useLocationStore((state) => state.areaLabel);
+  const clearArea = useLocationStore((state) => state.clearArea);
   const formingGroup = useMyFormingGroup();
 
   return (
@@ -26,7 +29,7 @@ export default function NowScreen() {
         <ScrollView contentContainerStyle={styles.content}>
           <View style={styles.topBar}>
             <BrandMark width={88} />
-            <View style={styles.locationPill}><View style={styles.signalDot} /><ThemedText type="smallBold" themeColor="textSecondary">{t('home.nearby')}</ThemedText></View>
+            <View style={styles.locationPill}><View style={styles.signalDot} /><ThemedText type="smallBold" themeColor="textSecondary">{source === 'manual' ? areaLabel : t('home.nearby')}</ThemedText></View>
           </View>
           <View style={styles.heading}>
             <ThemedText style={styles.heroTitle}>{t('home.hero')}</ThemedText>
@@ -38,6 +41,7 @@ export default function NowScreen() {
           </Pressable>
           {formingGroup.data && <FormingInviteCard group={formingGroup.data} />}
           <View style={styles.sectionHeader}><ThemedText style={styles.sectionTitle}>{t('home.plans')}</ThemedText>{coordinates && <Pressable onPress={() => router.push('/explore')}><ThemedText style={styles.seeAll}>{t('home.seeMap')}</ThemedText></Pressable>}</View>
+          {source === 'manual' && <Pressable accessibilityRole="button" onPress={clearArea}><ThemedText type="linkPrimary">{t('location.changeArea')}</ThemedText></Pressable>}
           {coordinates ? <NearbyPlanList /> : <LocationPrompt />}
         </ScrollView>
       </SafeAreaView>

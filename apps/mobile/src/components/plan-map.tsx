@@ -16,6 +16,8 @@ import type { NearbyPlan } from '@/types/nearby-plan';
 export function PlanMap() {
   const { t } = useTranslation();
   const coordinates = useLocationStore((state) => state.coordinates)!;
+  const source = useLocationStore((state) => state.source);
+  const areaLabel = useLocationStore((state) => state.areaLabel);
   const plans = useNearbyPlans();
   const containerRef = useRef<View>(null);
   const mapRef = useRef<LeafletMap | null>(null);
@@ -35,9 +37,15 @@ export function PlanMap() {
         maxZoom: 19,
         attribution: '© OpenStreetMap contributors',
       }).addTo(map);
-      leaflet.circleMarker([coordinates.latitude, coordinates.longitude], { radius: 8, color: '#FFFFFF', weight: 3, fillColor: '#2777E8', fillOpacity: 1 })
-        .bindTooltip(t('mapScreen.youAreHere'))
-        .addTo(map);
+      if (source === 'device') {
+        leaflet.circleMarker([coordinates.latitude, coordinates.longitude], { radius: 8, color: '#FFFFFF', weight: 3, fillColor: '#2777E8', fillOpacity: 1 })
+          .bindTooltip(t('mapScreen.youAreHere'))
+          .addTo(map);
+      } else {
+        leaflet.circle([coordinates.latitude, coordinates.longitude], { radius: 700, color: Brand.primary, weight: 2, fillColor: Brand.primary, fillOpacity: 0.1 })
+          .bindTooltip(t('mapScreen.browsingArea', { area: areaLabel ?? '' }))
+          .addTo(map);
+      }
       window.setTimeout(() => map.invalidateSize(), 0);
       mapRef.current = map;
       setMapReady(true);
@@ -49,7 +57,7 @@ export function PlanMap() {
       mapRef.current?.remove();
       mapRef.current = null;
     };
-  }, [coordinates.latitude, coordinates.longitude, t]);
+  }, [areaLabel, coordinates.latitude, coordinates.longitude, source, t]);
 
   useEffect(() => {
     if (!mapReady || !mapRef.current || !plans.data) return;

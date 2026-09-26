@@ -1,5 +1,12 @@
 # LLM Wiki Log
 
+## [2026-09-26] decision | location-optional discovery
+
+- Added a persistent manual launch-city choice for browsing without location permission.
+- Manual city centers are explicitly treated as approximate browsing areas, never as user locations.
+- “I'm Free” continues to require a fresh device area so proximity matching cannot use a fake city-center position.
+- Plan creation from a manual city uses a broad public meetup area until verified venue search is connected.
+
 ## 2026-09-07 — Web test authentication
 
 - Added email passwordless login as the default web-test path while preserving phone OTP and the social-auth placeholders.

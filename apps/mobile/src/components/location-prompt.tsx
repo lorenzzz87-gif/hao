@@ -4,15 +4,9 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Brand, Spacing } from '@/constants/theme';
+import { manualAreas } from '@/constants/manual-areas';
 import { useLocationStore } from '@/stores/location-store';
 import { useTranslation } from 'react-i18next';
-
-const areas = [
-  { label: 'Roma', latitude: 41.9028, longitude: 12.4964 },
-  { label: 'Milano', latitude: 45.4642, longitude: 9.19 },
-  { label: 'Napoli', latitude: 40.8518, longitude: 14.2681 },
-  { label: 'Firenze', latitude: 43.7696, longitude: 11.2558 },
-];
 
 export function LocationPrompt() {
   const { t } = useTranslation();
@@ -46,7 +40,7 @@ export function LocationPrompt() {
         {status === 'loading' ? <ActivityIndicator color="#FFFFFF" /> : <ThemedText style={styles.buttonText}>{deniedOnWeb ? t('location.retry') : denied ? t('location.settings') : error ? t('location.retry') : t('location.use')}</ThemedText>}
       </Pressable>
       <View style={styles.divider}><View style={styles.line} /><ThemedText type="small" themeColor="textSecondary">{t('location.manual')}</ThemedText><View style={styles.line} /></View>
-      <View style={styles.areas}>{areas.map((area) => <Pressable key={area.label} accessibilityRole="button" accessibilityLabel={t('location.browseCity', { city: area.label })} onPress={() => chooseArea(area, area.label)} style={styles.areaButton}><ThemedText type="smallBold">{area.label}</ThemedText></Pressable>)}</View>
+      <View style={styles.areas}>{manualAreas.map((area) => <Pressable key={area.label} accessibilityRole="button" accessibilityLabel={t('location.browseCity', { city: area.label })} onPress={() => chooseArea(area, area.label)} style={styles.areaButton}><ThemedText type="smallBold">{area.label}</ThemedText></Pressable>)}</View>
     </ThemedView>
   );
 }

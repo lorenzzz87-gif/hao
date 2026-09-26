@@ -63,17 +63,26 @@ i18n.addResourceBundle('zh', 'translation', {
 }, true, true);
 
 i18n.addResourceBundle('en', 'translation', {
-  createPlan: { placeHelp: 'Enter the name of a real café, park, or other well-lit public place. Until verified venue search is connected, HAO removes the typed address and shows only an approximate 400 m area.' },
+  location: { changeArea: 'Change city or use my location' },
+  mapScreen: { browsingArea: 'Browsing {{area}} · approximate area' },
+  createPlan: { placeHelp: 'Enter the name of a real café, park, or other well-lit public place. Until verified venue search is connected, HAO removes the typed address and shows only an approximate 400 m area.', manualAreaHelp: 'You are browsing {{area}} without sharing your location. The plan will use a broad public meeting area.', areaVenue: '{{area}} public meeting area', exactPlaceInChat: 'Choose the exact café, park, or public entrance together in the group chat.' },
+  freeScreen: { preciseLocationHelp: "I'm Free matches people who are genuinely nearby, so it needs your current area once. Your exact position is never shown to other people." },
   plan: { approximateArea: 'Approximate 400 m meeting area · agree on the exact public entrance in the group chat' },
 }, true, true);
 
 i18n.addResourceBundle('it', 'translation', {
-  createPlan: { placeHelp: 'Inserisci il nome di un vero bar, parco o altro luogo pubblico ben illuminato. Finché la ricerca dei luoghi non sarà verificata, HAO rimuove l’indirizzo inserito e mostra solo un’area approssimativa di 400 m.' },
+  location: { changeArea: 'Cambia città o usa la mia posizione' },
+  mapScreen: { browsingArea: 'Esplori {{area}} · zona approssimativa' },
+  createPlan: { placeHelp: 'Inserisci il nome di un vero bar, parco o altro luogo pubblico ben illuminato. Finché la ricerca dei luoghi non sarà verificata, HAO rimuove l’indirizzo inserito e mostra solo un’area approssimativa di 400 m.', manualAreaHelp: 'Stai esplorando {{area}} senza condividere la posizione. Il programma userà un’ampia zona pubblica di incontro.', areaVenue: 'Zona pubblica di incontro · {{area}}', exactPlaceInChat: 'Scegliete insieme nella chat il bar, il parco o l’ingresso pubblico esatto.' },
+  freeScreen: { preciseLocationHelp: 'Sono libero abbina persone realmente vicine, quindi richiede una volta la tua zona attuale. La posizione esatta non viene mai mostrata agli altri.' },
   plan: { approximateArea: 'Area di incontro approssimativa di 400 m · concordate l’ingresso pubblico esatto nella chat di gruppo' },
 }, true, true);
 
 i18n.addResourceBundle('zh', 'translation', {
-  createPlan: { placeHelp: '请输入真实咖啡馆、公园或其他照明良好的公共场所名称。在接入经过验证的场所搜索前，HAO 会删除手填地址，只显示约 400 米的模糊区域。' },
+  location: { changeArea: '切换城市或使用我的位置' },
+  mapScreen: { browsingArea: '正在浏览{{area}} · 大致区域' },
+  createPlan: { placeHelp: '请输入真实咖啡馆、公园或其他照明良好的公共场所名称。在接入经过验证的场所搜索前，HAO 会删除手填地址，只显示约 400 米的模糊区域。', manualAreaHelp: '你正在不共享定位的情况下浏览{{area}}。计划会使用较大的公共见面区域。', areaVenue: '{{area}}公共见面区域', exactPlaceInChat: '请在群聊中共同确定具体咖啡馆、公园或公共入口。' },
+  freeScreen: { preciseLocationHelp: '“我有空”只会撮合真正位于附近的人，因此需要获取一次你当前所在区域；其他人永远看不到你的精确位置。' },
   plan: { approximateArea: '约 400 米的模糊见面区域 · 请在群聊中确认具体公共入口' },
 }, true, true);
 
