@@ -24,6 +24,6 @@ export type PlanDetail = {
   seats_remaining: number;
   is_joined: boolean;
   is_creator: boolean;
-  venue: { id: string | null; name: string | null; address: string | null; latitude: number; longitude: number; is_public_place: boolean | null };
+  venue: { id: string | null; name: string | null; address: string | null; latitude: number; longitude: number; is_public_place: boolean | null; is_approximate?: boolean };
   members: PlanMember[];
 };

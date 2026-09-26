@@ -55,7 +55,7 @@ export function getDemoPlanDetail(planId: string): PlanDetail {
     seats_remaining: isWalk ? 3 : 3,
     is_joined: true,
     is_creator: false,
-    venue: { id: null, name: isWalk ? 'Park main entrance' : 'Central café', address: 'Public meeting place nearby', latitude: 0, longitude: 0, is_public_place: true },
+    venue: { id: null, name: isWalk ? 'Park main entrance' : 'Central café', address: null, latitude: 0, longitude: 0, is_public_place: true, is_approximate: true },
     members: [
       { id: 'demo-host', display_name: 'Alex', avatar_url: null, role: 'creator', common_interests: 2, phone_verified: true, identity_verified: true, successful_meets: 7 },
       { id: DEMO_USER_ID, display_name: 'You', avatar_url: null, role: 'member', common_interests: 3, phone_verified: true, identity_verified: false, successful_meets: 2 },

@@ -1,5 +1,5 @@
 begin;
-select plan(39);
+select plan(40);
 
 select has_extension('postgis', 'PostGIS is installed');
 select has_table('public', 'profiles', 'profiles exists');
@@ -33,6 +33,7 @@ select has_function('public', 'review_report', array['uuid', 'report_status'], '
 select has_column('public', 'profiles', 'terms_accepted_at', 'terms acceptance is recorded');
 select has_column('public', 'reports', 'moderation_due_at', 'reports have a 24-hour deadline');
 select has_trigger('public', 'plans', 'plans_approximate_location', 'plan coordinates are approximated');
+select has_trigger('public', 'venues', 'venues_approximate_location', 'unverified venue coordinates and addresses are protected');
 select has_trigger('public', 'plan_messages', 'plan_messages_moderate_ugc', 'chat content is filtered');
 select row_security_active('public.profiles'::regclass), 'profiles RLS is active';
 select row_security_active('public.plans'::regclass), 'plans RLS is active';

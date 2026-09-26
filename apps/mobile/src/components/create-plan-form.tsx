@@ -30,7 +30,6 @@ export function CreatePlanForm() {
   const [activity, setActivity] = useState<string | null>(null);
   const [minutes, setMinutes] = useState(60);
   const [venueName, setVenueName] = useState('');
-  const [venueAddress, setVenueAddress] = useState('');
   const [maxParticipants, setMaxParticipants] = useState(4);
   const [note, setNote] = useState('');
   const [busy, setBusy] = useState(false);
@@ -56,7 +55,7 @@ export function CreatePlanForm() {
       p_activity_type: activity,
       p_starts_at: startsAt,
       p_venue_name: venueName.trim(),
-      p_venue_address: venueAddress.trim(),
+      p_venue_address: null,
       p_latitude: coordinates.latitude,
       p_longitude: coordinates.longitude,
       p_max_participants: maxParticipants,
@@ -88,7 +87,6 @@ export function CreatePlanForm() {
         <ThemedText type="smallBold">{t('createPlan.publicPlace')}</ThemedText>
         <ThemedText type="small" themeColor="textSecondary">{t('createPlan.placeHelp')}</ThemedText>
         <TextInput accessibilityLabel={t('createPlan.venueName')} placeholder={t('createPlan.venueName')} value={venueName} onChangeText={setVenueName} maxLength={120} style={styles.input} />
-        <TextInput accessibilityLabel={t('createPlan.venueAddress')} placeholder={t('createPlan.venueAddress')} value={venueAddress} onChangeText={setVenueAddress} maxLength={240} style={styles.input} />
       </View>
 
       <View style={styles.section}>

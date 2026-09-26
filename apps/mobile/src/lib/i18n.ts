@@ -62,4 +62,19 @@ i18n.addResourceBundle('zh', 'translation', {
   forming: { signal: '正在组局', title: '附近还有 {{count}} 人也想{{activity}}。', body: '要一起吗？确认后 HAO 会自动创建计划并开启群聊。', accept: '加入', decline: '暂不参加', error: '无法保存你的选择，请重试。', activity: { coffee: '喝咖啡', walk: '散步', food: '吃东西', drink: '喝一杯', sport: '运动', sunset: '看日落', games: '玩游戏', anything: '做点即兴活动' } },
 }, true, true);
 
+i18n.addResourceBundle('en', 'translation', {
+  createPlan: { placeHelp: 'Enter the name of a real café, park, or other well-lit public place. Until verified venue search is connected, HAO removes the typed address and shows only an approximate 400 m area.' },
+  plan: { approximateArea: 'Approximate 400 m meeting area · agree on the exact public entrance in the group chat' },
+}, true, true);
+
+i18n.addResourceBundle('it', 'translation', {
+  createPlan: { placeHelp: 'Inserisci il nome di un vero bar, parco o altro luogo pubblico ben illuminato. Finché la ricerca dei luoghi non sarà verificata, HAO rimuove l’indirizzo inserito e mostra solo un’area approssimativa di 400 m.' },
+  plan: { approximateArea: 'Area di incontro approssimativa di 400 m · concordate l’ingresso pubblico esatto nella chat di gruppo' },
+}, true, true);
+
+i18n.addResourceBundle('zh', 'translation', {
+  createPlan: { placeHelp: '请输入真实咖啡馆、公园或其他照明良好的公共场所名称。在接入经过验证的场所搜索前，HAO 会删除手填地址，只显示约 400 米的模糊区域。' },
+  plan: { approximateArea: '约 400 米的模糊见面区域 · 请在群聊中确认具体公共入口' },
+}, true, true);
+
 export default i18n;
