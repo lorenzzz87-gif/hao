@@ -1,19 +1,22 @@
 import { ActivityIndicator, Pressable, StyleSheet } from 'react-native';
 import MapView, { Circle } from 'react-native-maps';
 import { useRouter } from 'expo-router';
+import { useTranslation } from 'react-i18next';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { useNearbyPlans } from '@/hooks/use-nearby-plans';
 import { useLocationStore } from '@/stores/location-store';
+import { userFacingError } from '@/lib/user-facing-error';
 
 export function PlanMap() {
   const router = useRouter();
+  const { t } = useTranslation();
   const coordinates = useLocationStore((state) => state.coordinates)!;
   const plans = useNearbyPlans();
 
   if (plans.isLoading) return <ThemedView style={styles.center}><ActivityIndicator /></ThemedView>;
-  if (plans.error) return <ThemedView style={styles.center}><ThemedText>{plans.error.message}</ThemedText><Pressable onPress={() => void plans.refetch()}><ThemedText type="linkPrimary">Try again</ThemedText></Pressable></ThemedView>;
+  if (plans.error) return <ThemedView style={styles.center}><ThemedText>{userFacingError(plans.error, t('nearby.loadErrorHelp'))}</ThemedText><Pressable onPress={() => void plans.refetch()}><ThemedText type="linkPrimary">{t('tryAgain')}</ThemedText></Pressable></ThemedView>;
 
   return (
     <ThemedView style={styles.container}>
@@ -22,9 +25,9 @@ export function PlanMap() {
       </MapView>
       {!plans.data?.length && (
         <ThemedView type="backgroundElement" style={styles.empty}>
-          <ThemedText type="smallBold">Be the first plan in this area</ThemedText>
-          <ThemedText type="small" themeColor="textSecondary">Nothing nearby in the next six hours.</ThemedText>
-          <Pressable onPress={() => router.push('/create')}><ThemedText type="linkPrimary">Create in 20 seconds</ThemedText></Pressable>
+          <ThemedText type="smallBold">{t('nearby.first')}</ThemedText>
+          <ThemedText type="small" themeColor="textSecondary">{t('nearby.emptyShort')}</ThemedText>
+          <Pressable onPress={() => router.push('/create')}><ThemedText type="linkPrimary">{t('nearby.createFast')}</ThemedText></Pressable>
         </ThemedView>
       )}
     </ThemedView>

@@ -1,5 +1,6 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { ActivityIndicator, Pressable, StyleSheet } from 'react-native';
+import { useTranslation } from 'react-i18next';
 
 import AppTabs from '@/components/app-tabs';
 import { AuthScreen } from '@/components/auth-screen';
@@ -13,6 +14,7 @@ import i18n from '@/lib/i18n';
 import { userFacingError } from '@/lib/user-facing-error';
 
 export function AppGate() {
+  const { t } = useTranslation();
   useAuthBootstrap();
   const queryClient = useQueryClient();
   const initialized = useSessionStore((state) => state.initialized);
@@ -35,10 +37,10 @@ export function AppGate() {
   if (profile.error) {
     return (
       <ThemedView style={styles.errorState}>
-        <ThemedText type="subtitle">Couldn&apos;t load your profile</ThemedText>
-        <ThemedText themeColor="textSecondary">{userFacingError(profile.error, 'Your profile could not load. Please try again.')}</ThemedText>
-        <Pressable onPress={() => void profile.refetch()} style={styles.action}><ThemedText style={styles.actionText}>Try again</ThemedText></Pressable>
-        <Pressable onPress={() => void supabase.auth.signOut()}><ThemedText type="small">Sign out</ThemedText></Pressable>
+        <ThemedText type="subtitle">{t('gate.profileTitle')}</ThemedText>
+        <ThemedText themeColor="textSecondary">{userFacingError(profile.error, t('gate.profileError'))}</ThemedText>
+        <Pressable onPress={() => void profile.refetch()} style={styles.action}><ThemedText style={styles.actionText}>{t('tryAgain')}</ThemedText></Pressable>
+        <Pressable onPress={() => void supabase.auth.signOut()}><ThemedText type="small">{t('profile.signOut')}</ThemedText></Pressable>
       </ThemedView>
     );
   }

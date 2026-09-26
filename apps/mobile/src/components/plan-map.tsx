@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import type { Circle, Map as LeafletMap } from 'leaflet';
+import { useTranslation } from 'react-i18next';
 
 import { NearbyPlanList } from '@/components/nearby-plan-list';
 import { PlanCard } from '@/components/plan-card';
@@ -13,6 +14,7 @@ import { useLocationStore } from '@/stores/location-store';
 import type { NearbyPlan } from '@/types/nearby-plan';
 
 export function PlanMap() {
+  const { t } = useTranslation();
   const coordinates = useLocationStore((state) => state.coordinates)!;
   const plans = useNearbyPlans();
   const containerRef = useRef<View>(null);
@@ -34,7 +36,7 @@ export function PlanMap() {
         attribution: '© OpenStreetMap contributors',
       }).addTo(map);
       leaflet.circleMarker([coordinates.latitude, coordinates.longitude], { radius: 8, color: '#FFFFFF', weight: 3, fillColor: '#2777E8', fillOpacity: 1 })
-        .bindTooltip('You are here')
+        .bindTooltip(t('mapScreen.youAreHere'))
         .addTo(map);
       window.setTimeout(() => map.invalidateSize(), 0);
       mapRef.current = map;
@@ -47,7 +49,7 @@ export function PlanMap() {
       mapRef.current?.remove();
       mapRef.current = null;
     };
-  }, [coordinates.latitude, coordinates.longitude]);
+  }, [coordinates.latitude, coordinates.longitude, t]);
 
   useEffect(() => {
     if (!mapReady || !mapRef.current || !plans.data) return;
@@ -73,22 +75,22 @@ export function PlanMap() {
   return (
     <ThemedView style={styles.screen}>
       <View style={styles.header}>
-        <View><ThemedText style={styles.eyebrow}>HAO · NOW</ThemedText><ThemedText style={styles.title}>What&apos;s nearby</ThemedText></View>
-        <View style={styles.locationPill}><Ionicons name="location" size={15} color={Brand.primary} /><ThemedText type="smallBold">Within 5 km</ThemedText></View>
+        <View><ThemedText style={styles.eyebrow}>HAO · NOW</ThemedText><ThemedText style={styles.title}>{t('mapScreen.title')}</ThemedText></View>
+        <View style={styles.locationPill}><Ionicons name="location" size={15} color={Brand.primary} /><ThemedText type="smallBold">{t('mapScreen.within')}</ThemedText></View>
       </View>
       <View style={styles.segmented}>
-        <Pressable onPress={() => setMode('map')} style={[styles.segment, mode === 'map' && styles.segmentActive]}><Ionicons name="map-outline" size={17} color={mode === 'map' ? '#FFFFFF' : '#67666D'} /><ThemedText type="smallBold" style={mode === 'map' && styles.segmentTextActive}>Map</ThemedText></Pressable>
-        <Pressable onPress={() => setMode('list')} style={[styles.segment, mode === 'list' && styles.segmentActive]}><Ionicons name="list" size={17} color={mode === 'list' ? '#FFFFFF' : '#67666D'} /><ThemedText type="smallBold" style={mode === 'list' && styles.segmentTextActive}>List</ThemedText></Pressable>
+        <Pressable onPress={() => setMode('map')} style={[styles.segment, mode === 'map' && styles.segmentActive]}><Ionicons name="map-outline" size={17} color={mode === 'map' ? '#FFFFFF' : '#67666D'} /><ThemedText type="smallBold" style={mode === 'map' && styles.segmentTextActive}>{t('map')}</ThemedText></Pressable>
+        <Pressable onPress={() => setMode('list')} style={[styles.segment, mode === 'list' && styles.segmentActive]}><Ionicons name="list" size={17} color={mode === 'list' ? '#FFFFFF' : '#67666D'} /><ThemedText type="smallBold" style={mode === 'list' && styles.segmentTextActive}>{t('mapScreen.list')}</ThemedText></Pressable>
       </View>
 
       <View style={[styles.mapFrame, mode === 'list' && styles.hidden]}>
         <View ref={containerRef} style={styles.map} />
-        {(!mapReady || plans.isLoading) && <View style={styles.loading}><ActivityIndicator color={Brand.primary} /><ThemedText type="small" themeColor="textSecondary">Finding what&apos;s nearby…</ThemedText></View>}
-        {plans.error && <ThemedView style={styles.overlayCard}><ThemedText type="smallBold">Plans couldn&apos;t load</ThemedText><ThemedText type="small" themeColor="textSecondary">The map still works. Try loading nearby plans again.</ThemedText><Pressable onPress={() => void plans.refetch()}><ThemedText style={styles.retry}>Try again</ThemedText></Pressable></ThemedView>}
-        {!plans.isLoading && !plans.error && !plans.data?.length && <ThemedView style={styles.overlayCard}><ThemedText style={styles.emptyTitle}>No plans here yet</ThemedText><ThemedText type="small" themeColor="textSecondary">Start something nearby for the next six hours.</ThemedText></ThemedView>}
+        {(!mapReady || plans.isLoading) && <View style={styles.loading}><ActivityIndicator color={Brand.primary} /><ThemedText type="small" themeColor="textSecondary">{t('mapScreen.loading')}</ThemedText></View>}
+        {plans.error && <ThemedView style={styles.overlayCard}><ThemedText type="smallBold">{t('nearby.loadError')}</ThemedText><ThemedText type="small" themeColor="textSecondary">{t('mapScreen.loadHelp')}</ThemedText><Pressable onPress={() => void plans.refetch()}><ThemedText style={styles.retry}>{t('tryAgain')}</ThemedText></Pressable></ThemedView>}
+        {!plans.isLoading && !plans.error && !plans.data?.length && <ThemedView style={styles.overlayCard}><ThemedText style={styles.emptyTitle}>{t('mapScreen.empty')}</ThemedText><ThemedText type="small" themeColor="textSecondary">{t('mapScreen.emptyHelp')}</ThemedText></ThemedView>}
         {selectedPlan && <View style={styles.preview}><PlanCard plan={selectedPlan} /></View>}
       </View>
-      {mode === 'list' && <View style={styles.list}><View style={styles.listHeading}><ThemedText style={styles.listTitle}>Plans near you</ThemedText><ThemedText type="small" themeColor="textSecondary">Next six hours</ThemedText></View><NearbyPlanList /></View>}
+      {mode === 'list' && <View style={styles.list}><View style={styles.listHeading}><ThemedText style={styles.listTitle}>{t('home.plans')}</ThemedText><ThemedText type="small" themeColor="textSecondary">{t('mapScreen.nextHours')}</ThemedText></View><NearbyPlanList /></View>}
     </ThemedView>
   );
 }

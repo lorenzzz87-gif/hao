@@ -37,16 +37,16 @@ export function LocationPrompt() {
       <View style={styles.copy}><ThemedText style={styles.title}>{t('location.title')}</ThemedText>
         <ThemedText type="small" themeColor="textSecondary">{t('location.privacy')}</ThemedText>
       </View>
-      {error && <ThemedText type="small" style={styles.error}>{error}</ThemedText>}
+      {error && <ThemedText type="small" style={styles.error}>{t('location.error')}</ThemedText>}
       {deniedOnWeb && <ThemedView style={styles.webHelp}>
-        <ThemedText type="smallBold">Allow location in Safari</ThemedText>
-        <ThemedText type="small" themeColor="textSecondary">Tap the page menu beside the address bar → Website Settings → Location → Allow. Then come back and try again.</ThemedText>
+        <ThemedText type="smallBold">{t('location.safariTitle')}</ThemedText>
+        <ThemedText type="small" themeColor="textSecondary">{t('location.safariHelp')}</ThemedText>
       </ThemedView>}
       <Pressable accessibilityRole="button" disabled={status === 'loading'} onPress={handleLocationAction} style={[styles.button, status === 'loading' && styles.disabled]}>
         {status === 'loading' ? <ActivityIndicator color="#FFFFFF" /> : <ThemedText style={styles.buttonText}>{deniedOnWeb ? t('location.retry') : denied ? t('location.settings') : error ? t('location.retry') : t('location.use')}</ThemedText>}
       </Pressable>
       <View style={styles.divider}><View style={styles.line} /><ThemedText type="small" themeColor="textSecondary">{t('location.manual')}</ThemedText><View style={styles.line} /></View>
-      <View style={styles.areas}>{areas.map((area) => <Pressable key={area.label} accessibilityRole="button" accessibilityLabel={`Browse ${area.label}`} onPress={() => chooseArea(area, area.label)} style={styles.areaButton}><ThemedText type="smallBold">{area.label}</ThemedText></Pressable>)}</View>
+      <View style={styles.areas}>{areas.map((area) => <Pressable key={area.label} accessibilityRole="button" accessibilityLabel={t('location.browseCity', { city: area.label })} onPress={() => chooseArea(area, area.label)} style={styles.areaButton}><ThemedText type="smallBold">{area.label}</ThemedText></Pressable>)}</View>
     </ThemedView>
   );
 }
