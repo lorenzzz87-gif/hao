@@ -29,6 +29,7 @@ NOW is built as vertical slices toward a real Successful Meet. Expo SDK 55 owns 
 - Start single-threaded. Parallelize mobile, backend, and platform work only after contracts and migrations stabilize.
 - Phone OTP is the first closed-test authentication path. Apple and Google can be added after production credentials and redirect URLs are available.
 - Users can browse and create broad public-area plans after manually choosing a launch city. Manual city coordinates never represent the user and cannot be used for “I'm Free” matching or check-in; those actions require fresh foreground location.
+- Age compatibility V1 is display-only: exact birth dates stay server-side, group summaries appear only from three joined members, host preferences are soft and non-overlapping, and out-of-range users can join after a neutral confirmation. Age does not filter or reorder discovery until post-launch evidence supports an experiment.
 
 ## Delivery order
 

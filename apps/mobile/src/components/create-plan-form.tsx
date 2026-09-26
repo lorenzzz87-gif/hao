@@ -10,9 +10,12 @@ import { Brand, Spacing } from '@/constants/theme';
 import { supabase } from '@/lib/supabase';
 import { userFacingError } from '@/lib/user-facing-error';
 import { useLocationStore } from '@/stores/location-store';
+import type { PreferredAge } from '@/types/age-band';
+import { useSessionStore } from '@/stores/session-store';
 
 type TimeChoice = { key: string; minutes: number };
 const baseTimes: TimeChoice[] = [{ key: 'in30', minutes: 30 }, { key: 'in1h', minutes: 60 }, { key: 'in2h', minutes: 120 }];
+const preferredAges: PreferredAge[] = ['any', '18_24', '25_34', '35_44', '45_plus'];
 
 function getTimeChoices(): TimeChoice[] {
   const now = new Date();
@@ -26,6 +29,7 @@ export function CreatePlanForm() {
   const { t } = useTranslation();
   const router = useRouter();
   const queryClient = useQueryClient();
+  const demoMode = useSessionStore((state) => state.demoMode);
   const coordinates = useLocationStore((state) => state.coordinates)!;
   const locationSource = useLocationStore((state) => state.source);
   const areaLabel = useLocationStore((state) => state.areaLabel);
@@ -33,6 +37,7 @@ export function CreatePlanForm() {
   const [minutes, setMinutes] = useState(60);
   const [venueName, setVenueName] = useState('');
   const [maxParticipants, setMaxParticipants] = useState(4);
+  const [preferredAge, setPreferredAge] = useState<PreferredAge>('any');
   const [note, setNote] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -40,6 +45,11 @@ export function CreatePlanForm() {
   const interests = useQuery({
     queryKey: ['interests'],
     queryFn: async () => {
+      if (demoMode) return [
+        { slug: 'coffee', label: 'Coffee' }, { slug: 'walk', label: 'Walk' },
+        { slug: 'food', label: 'Food' }, { slug: 'drink', label: 'Drink' },
+        { slug: 'sport', label: 'Sport' }, { slug: 'sunset', label: 'Sunset' },
+      ];
       const result = await supabase.from('interests').select('slug,label').order('id');
       if (result.error) throw result.error;
       return result.data;
@@ -53,6 +63,11 @@ export function CreatePlanForm() {
     if (!activity || !valid) return;
     setBusy(true);
     setError(null);
+    if (demoMode) {
+      setBusy(false);
+      router.replace('/');
+      return;
+    }
     const startsAt = new Date(Date.now() + minutes * 60_000).toISOString();
     const result = await supabase.rpc('create_plan', {
       p_activity_type: activity,
@@ -64,6 +79,7 @@ export function CreatePlanForm() {
       p_max_participants: maxParticipants,
       p_note: note.trim(),
       p_title: null,
+      p_preferred_age: preferredAge,
     });
     setBusy(false);
     if (result.error) {
@@ -92,6 +108,12 @@ export function CreatePlanForm() {
         {locationSource === 'manual'
           ? <ThemedView type="backgroundElement" style={styles.areaCard}><ThemedText type="smallBold">{resolvedVenueName}</ThemedText><ThemedText type="small" themeColor="textSecondary">{t('createPlan.exactPlaceInChat')}</ThemedText></ThemedView>
           : <TextInput accessibilityLabel={t('createPlan.venueName')} placeholder={t('createPlan.venueName')} value={venueName} onChangeText={setVenueName} maxLength={120} style={styles.input} />}
+      </View>
+
+      <View style={styles.section}>
+        <ThemedText type="smallBold">{t('createPlan.preferredAge')}</ThemedText>
+        <ThemedView style={styles.options}>{preferredAges.map((value) => <Pressable accessibilityRole="radio" accessibilityState={{ selected: preferredAge === value }} key={value} onPress={() => setPreferredAge(value)} style={[styles.chip, preferredAge === value && styles.chipSelected]}><ThemedText type="small">{t(`age.pref.${value}`)}</ThemedText></Pressable>)}</ThemedView>
+        <ThemedText type="small" themeColor="textSecondary">{t('createPlan.preferredAgeHint')}</ThemedText>
       </View>
 
       <View style={styles.section}>

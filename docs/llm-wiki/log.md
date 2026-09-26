@@ -1,5 +1,12 @@
 # LLM Wiki Log
 
+## [2026-09-26] decision | privacy-preserving age compatibility
+
+- Confirmed the first age-band release will not filter or reorder plans.
+- Suppress all group age summaries below three joined members to prevent individual inference.
+- Use non-overlapping host preference ranges and allow out-of-range members to join after a neutral confirmation.
+- Exact birth dates remain server-only; clients receive only an age-band label or aggregate summary.
+
 ## [2026-09-26] decision | location-optional discovery
 
 - Added a persistent manual launch-city choice for browsing without location permission.

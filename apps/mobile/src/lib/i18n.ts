@@ -86,4 +86,43 @@ i18n.addResourceBundle('zh', 'translation', {
   plan: { approximateArea: '约 400 米的模糊见面区域 · 请在群聊中确认具体公共入口' },
 }, true, true);
 
+i18n.addResourceBundle('en', 'translation', {
+  age: {
+    planFit: 'Group age range',
+    band: { '18_19': '18–19', '20s': '20s', '30s': '30s', '40s': '40s', '50s': '50s', '60_plus': '60+' },
+    summary: { mostly: 'Mostly {{band}}', range: '{{from}} to {{to}}', privateUntilThree: 'Shown after 3 people join' },
+    pref: { any: 'Any age', '18_24': '18–24', '25_34': '25–34', '35_44': '35–44', '45_plus': '45+', tag: 'Host prefers {{range}}' },
+  },
+  createPlan: { preferredAge: 'Preferred age (optional)', preferredAgeHint: 'People outside this range can still join after a reminder.' },
+  joinAgePrompt: { title: 'Heads up', body: "The host hoped for people aged {{range}}. You're still welcome to join.", confirm: 'Join anyway', cancel: 'Look at other plans' },
+  profile: { ageBand: 'Your age range', ageBandHint: 'Others see only your age range, never your exact age or birth date.', ageBandError: 'Your age range is unavailable right now.' },
+  errors: { underage: 'You must be 18 or older to use HAO.', invalidBirthDate: 'Please enter a valid birth date.', birthDateLocked: "Your birth date can't be changed. Contact support if it's wrong." },
+}, true, true);
+
+i18n.addResourceBundle('it', 'translation', {
+  age: {
+    planFit: 'Fascia d’età del gruppo',
+    band: { '18_19': '18–19 anni', '20s': '20–29 anni', '30s': '30–39 anni', '40s': '40–49 anni', '50s': '50–59 anni', '60_plus': '60+ anni' },
+    summary: { mostly: 'Per lo più {{band}}', range: 'Da {{from}} a {{to}}', privateUntilThree: 'Visibile dopo l’ingresso di 3 persone' },
+    pref: { any: 'Qualsiasi età', '18_24': '18–24', '25_34': '25–34', '35_44': '35–44', '45_plus': '45+', tag: 'Preferenza: {{range}}' },
+  },
+  createPlan: { preferredAge: 'Età preferita (facoltativa)', preferredAgeHint: 'Anche chi è fuori da questa fascia può unirsi dopo un avviso.' },
+  joinAgePrompt: { title: 'Un’informazione', body: 'L’organizzatore sperava in persone tra {{range}}. Puoi comunque unirti.', confirm: 'Unisciti comunque', cancel: 'Vedi altri programmi' },
+  profile: { ageBand: 'La tua fascia d’età', ageBandHint: 'Gli altri vedono solo la tua fascia d’età, mai l’età esatta o la data di nascita.', ageBandError: 'La fascia d’età non è disponibile al momento.' },
+  errors: { underage: 'Devi avere almeno 18 anni per usare HAO.', invalidBirthDate: 'Inserisci una data di nascita valida.', birthDateLocked: 'La data di nascita non può essere modificata. Contatta l’assistenza se è errata.' },
+}, true, true);
+
+i18n.addResourceBundle('zh', 'translation', {
+  age: {
+    planFit: '成员年龄范围',
+    band: { '18_19': '18–19 岁', '20s': '20 多岁', '30s': '30 多岁', '40s': '40 多岁', '50s': '50 多岁', '60_plus': '60 岁以上' },
+    summary: { mostly: '成员大多 {{band}}', range: '成员 {{from}} 到 {{to}}', privateUntilThree: '3 人加入后显示年龄范围' },
+    pref: { any: '不限', '18_24': '18–24 岁', '25_34': '25–34 岁', '35_44': '35–44 岁', '45_plus': '45 岁以上', tag: '发起人希望 {{range}}' },
+  },
+  createPlan: { preferredAge: '希望的年龄段（可选）', preferredAgeHint: '范围外的人确认提示后仍可加入。' },
+  joinAgePrompt: { title: '提示一下', body: '发起人希望参加者在 {{range}}。你仍然可以加入。', confirm: '仍然加入', cancel: '看看其他计划' },
+  profile: { ageBand: '你的年龄段', ageBandHint: '别人只能看到你的年龄段，看不到具体年龄或出生日期。', ageBandError: '暂时无法读取你的年龄段。' },
+  errors: { underage: '你必须年满 18 岁才能使用 HAO。', invalidBirthDate: '请输入有效的出生日期。', birthDateLocked: '出生日期不能修改，如有错误请联系客服。' },
+}, true, true);
+
 export default i18n;

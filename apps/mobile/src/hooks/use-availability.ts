@@ -4,11 +4,13 @@ import { supabase } from '@/lib/supabase';
 import { useSessionStore } from '@/stores/session-store';
 import type { NearbyPlan } from '@/types/nearby-plan';
 import { mapFormingGroup, type FormingGroup, type FormingGroupRow } from '@/types/forming-group';
+import type { AgeSummary, PreferredAge } from '@/types/age-band';
 
 type NearbyPlanRow = {
   id: string; title: string; activity_type: string; starts_at: string; venue_id: string | null;
   latitude: number; longitude: number; distance_m: number; joined_count: number;
   max_participants: number; status: NearbyPlan['status']; score: number;
+  preferred_age: PreferredAge; age_summary: AgeSummary | null; viewer_outside_preferred_age: boolean;
 };
 
 export type AvailabilityResult = {
@@ -42,6 +44,9 @@ export function useCreateAvailability() {
           maxParticipants: isWalk ? 5 : 6,
           status: 'open',
           score: isWalk ? 0.89 : 0.96,
+          preferredAge: isWalk ? '25_34' : 'any',
+          ageSummary: isWalk ? null : { type: 'mostly', band: '20s' },
+          viewerOutsidePreferredAge: isWalk,
         };
 
         return {
@@ -97,6 +102,9 @@ export function useCreateAvailability() {
           maxParticipants: row.max_participants,
           status: row.status,
           score: Number(row.score),
+          preferredAge: row.preferred_age,
+          ageSummary: row.age_summary,
+          viewerOutsidePreferredAge: row.viewer_outside_preferred_age,
         })),
         compatiblePeople: Number(match?.compatible_people ?? 0),
         sharedInterest: match?.shared_interest ?? null,

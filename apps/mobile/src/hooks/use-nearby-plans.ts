@@ -4,11 +4,13 @@ import { supabase } from '@/lib/supabase';
 import { useLocationStore } from '@/stores/location-store';
 import { useSessionStore } from '@/stores/session-store';
 import type { NearbyPlan } from '@/types/nearby-plan';
+import type { AgeSummary, PreferredAge } from '@/types/age-band';
 
 type NearbyPlanRow = {
   id: string; title: string; activity_type: string; starts_at: string; venue_id: string | null;
   latitude: number; longitude: number; distance_m: number; joined_count: number;
   max_participants: number; status: NearbyPlan['status']; score: number;
+  preferred_age: PreferredAge; age_summary: AgeSummary | null; viewer_outside_preferred_age: boolean;
 };
 
 export function useNearbyPlans() {
@@ -28,11 +30,13 @@ export function useNearbyPlans() {
             id: 'demo-coffee', title: 'Coffee & good conversation', activityType: 'coffee', startsAt: startsAt(45), venueId: null,
             latitude: coordinates!.latitude + 0.009, longitude: coordinates!.longitude - 0.006, distanceM: 900,
             joinedCount: 3, maxParticipants: 6, status: 'open', score: 0.96,
+            preferredAge: 'any', ageSummary: { type: 'mostly', band: '20s' }, viewerOutsidePreferredAge: false,
           },
           {
             id: 'demo-walk', title: 'Sunset walk in the park', activityType: 'walk', startsAt: startsAt(130), venueId: null,
             latitude: coordinates!.latitude - 0.008, longitude: coordinates!.longitude + 0.011, distanceM: 1400,
             joinedCount: 2, maxParticipants: 5, status: 'open', score: 0.89,
+            preferredAge: '25_34', ageSummary: null, viewerOutsidePreferredAge: true,
           },
         ];
       }
@@ -58,6 +62,9 @@ export function useNearbyPlans() {
         maxParticipants: row.max_participants,
         status: row.status,
         score: Number(row.score),
+        preferredAge: row.preferred_age,
+        ageSummary: row.age_summary,
+        viewerOutsidePreferredAge: row.viewer_outside_preferred_age,
       }));
     },
   });

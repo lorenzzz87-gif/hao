@@ -1,11 +1,14 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import * as Crypto from 'expo-crypto';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { AgePreferenceSheet } from '@/components/age-preference-sheet';
+import { AgeSummary } from '@/components/age-summary';
 import { MaxContentWidth, Spacing } from '@/constants/theme';
 import { useCheckIn, usePlanCheckInStatus } from '@/hooks/use-check-in';
 import { useCancelPlan, usePlanDetail, usePlanMembership } from '@/hooks/use-plan-detail';
@@ -13,6 +16,7 @@ import { useSessionStore } from '@/stores/session-store';
 import { useTranslateContent } from '@/hooks/use-translation';
 import { DEMO_USER_ID } from '@/lib/demo-chat';
 import { userFacingError } from '@/lib/user-facing-error';
+import { supabase } from '@/lib/supabase';
 import { formatPlanDateTime } from '@/lib/format-date';
 
 export default function PlanDetailScreen() {
@@ -33,6 +37,8 @@ export default function PlanDetailScreen() {
   const translation = useTranslateContent();
   const [translatedTitle, setTranslatedTitle] = useState<string>();
   const [translatedNote, setTranslatedNote] = useState<string>();
+  const [agePromptOpen, setAgePromptOpen] = useState(false);
+  const [ageInteractionId, setAgeInteractionId] = useState<string>();
 
   if (plan.isLoading) return <ThemedView style={styles.center}><ActivityIndicator /></ThemedView>;
   if (plan.error || !plan.data) return <ThemedView style={styles.center}><ThemedText type="smallBold">{t('plan.unavailable')}</ThemedText><ThemedText type="small" themeColor="textSecondary">{userFacingError(plan.error, t('plan.notFound'))}</ThemedText><Pressable onPress={() => router.back()}><ThemedText type="linkPrimary">{t('plan.goBack')}</ThemedText></Pressable></ThemedView>;
@@ -46,6 +52,42 @@ export default function PlanDetailScreen() {
   const checkInClosesAt = new Date(data.expected_end_at ?? new Date(new Date(data.starts_at).getTime() + 2 * 60 * 60_000).toISOString()).getTime() + 30 * 60_000;
   const canCheckIn = data.is_joined && now >= checkInOpensAt && now <= checkInClosesAt && !checkInStatus.data?.self_checked_in;
 
+  async function recordAgePrompt(action: 'shown' | 'cancelled', interactionId: string) {
+    if (demoMode) return;
+    await supabase.rpc('record_age_prompt_event', { p_plan_id: data.id, p_interaction_id: interactionId, p_action: action });
+  }
+
+  async function openAgePrompt() {
+    const interactionId = Crypto.randomUUID();
+    setAgeInteractionId(interactionId);
+    setAgePromptOpen(true);
+    await recordAgePrompt('shown', interactionId);
+  }
+
+  async function handleJoin() {
+    if (data.viewer_outside_preferred_age) { await openAgePrompt(); return; }
+    try {
+      await join.mutateAsync();
+    } catch (error) {
+      if (/age_preference_ack_required/i.test(String((error as { message?: string })?.message ?? error))) await openAgePrompt();
+    }
+  }
+
+  async function confirmAgePreference() {
+    if (!ageInteractionId) return;
+    try {
+      await join.mutateAsync({ acknowledgedAgePreference: true, agePromptInteractionId: ageInteractionId });
+      setAgePromptOpen(false);
+    } catch {
+      // The inline sheet keeps the error visible and lets the user retry or cancel.
+    }
+  }
+
+  async function cancelAgePreference() {
+    setAgePromptOpen(false);
+    if (ageInteractionId) await recordAgePrompt('cancelled', ageInteractionId);
+  }
+
   return (
     <ThemedView style={styles.screen}>
       <SafeAreaView style={styles.safeArea}>
@@ -53,6 +95,7 @@ export default function PlanDetailScreen() {
           <Pressable onPress={() => router.back()}><ThemedText type="linkPrimary">{t('plan.back')}</ThemedText></Pressable>
           <View style={styles.header}><ThemedText type="smallBold" style={styles.category}>{data.activity_type}</ThemedText><ThemedText type="subtitle">{translatedTitle ?? data.title}</ThemedText>{translatedTitle && <ThemedText type="small" themeColor="textSecondary">{t('plan.original')}: {data.title}</ThemedText>}<Pressable disabled={translation.isPending} onPress={() => void translation.mutateAsync({ contentType: 'plan_title', contentId: data.id }).then((result) => setTranslatedTitle(result.translatedText)).catch(() => undefined)}><ThemedText type="linkPrimary">{t('plan.translateTitle')}{translation.targetLanguage ? ` · ${translation.targetLanguage.toUpperCase()}` : ''}</ThemedText></Pressable><ThemedText themeColor="textSecondary">{formatPlanDateTime(data.starts_at)}</ThemedText></View>
           <ThemedView type="backgroundElement" style={styles.card}><ThemedText type="smallBold">{t('plan.meetingPlace')}</ThemedText><ThemedText>{data.venue.name ?? t('plan.publicPlace')}</ThemedText>{data.venue.address && !data.venue.is_approximate && <ThemedText type="small" themeColor="textSecondary">{data.venue.address}</ThemedText>}<ThemedText type="small" themeColor="textSecondary">{data.venue.is_approximate ? t('plan.approximateArea') : t('plan.publicRecommended')}</ThemedText></ThemedView>
+          <ThemedView type="backgroundElement" style={styles.card}><ThemedText type="smallBold">{t('age.planFit')}</ThemedText><AgeSummary summary={data.age_summary} preferredAge={data.preferred_age} outsidePreference={data.viewer_outside_preferred_age} /></ThemedView>
           {data.note && <ThemedView type="backgroundElement" style={styles.card}><ThemedText type="smallBold">{t('plan.about')}</ThemedText><ThemedText>{translatedNote ?? data.note}</ThemedText>{translatedNote && <ThemedText type="small" themeColor="textSecondary">{t('plan.original')}: {data.note}</ThemedText>}<Pressable disabled={translation.isPending} onPress={() => void translation.mutateAsync({ contentType: 'plan_note', contentId: data.id }).then((result) => setTranslatedNote(result.translatedText)).catch(() => undefined)}><ThemedText type="linkPrimary">{t('plan.translateNote')}</ThemedText></Pressable></ThemedView>}
           {(translation.error || translation.languageError) && <ThemedText type="small" style={styles.error}>{userFacingError(translation.error ?? translation.languageError, t('plan.translationError'))}</ThemedText>}
           {data.is_joined && <ThemedView type="backgroundElement" style={styles.card}><ThemedText type="smallBold">{t('plan.checkInTitle')}</ThemedText>{checkInStatus.isLoading ? <ActivityIndicator /> : <><ThemedText themeColor="textSecondary">{t('plan.checkedInCount', { count: checkInStatus.data?.checked_in_count ?? 0 })}</ThemedText>{checkInStatus.data?.successful_meet && <ThemedText style={styles.success}>{t('plan.successConfirmed')}</ThemedText>}{checkInStatus.data?.self_checked_in ? <ThemedText style={styles.success}>{t('plan.youCheckedIn')}</ThemedText> : canCheckIn ? <Pressable disabled={checkIn.isPending} onPress={() => checkIn.mutate()} style={styles.checkInAction}>{checkIn.isPending ? <ActivityIndicator color="#FFFFFF" /> : <ThemedText style={styles.actionText}>{t('plan.checkIn')}</ThemedText>}</Pressable> : <ThemedText type="small" themeColor="textSecondary">{t('plan.checkInHelp')}</ThemedText>}</>}{(checkIn.error || checkInStatus.error) && <ThemedText type="small" style={styles.error}>{userFacingError(checkIn.error ?? checkInStatus.error, t('plan.checkInError'))}</ThemedText>}</ThemedView>}
@@ -60,11 +103,12 @@ export default function PlanDetailScreen() {
           {mutation.error && <ThemedText type="small" style={styles.error}>{userFacingError(mutation.error, t('plan.membershipError'))}</ThemedText>}
           {cancel.error && <ThemedText type="small" style={styles.error}>{userFacingError(cancel.error, t('plan.cancelError'))}</ThemedText>}
           {data.is_joined && <Pressable accessibilityRole="button" onPress={() => router.push(`/chats/${data.id}`)} style={styles.chatAction}><ThemedText style={styles.actionText}>{t('plan.openChat')}</ThemedText></Pressable>}
-          <Pressable accessibilityRole="button" disabled={actionDisabled} onPress={() => mutation.mutate()} style={[styles.action, data.is_joined && !data.is_creator && styles.secondaryAction, actionDisabled && styles.disabled]}>{mutation.isPending ? <ActivityIndicator color="#FFFFFF" /> : <ThemedText style={styles.actionText}>{actionLabel}</ThemedText>}</Pressable>
+          <Pressable accessibilityRole="button" disabled={actionDisabled} onPress={() => data.is_joined ? leave.mutate() : void handleJoin()} style={[styles.action, data.is_joined && !data.is_creator && styles.secondaryAction, actionDisabled && styles.disabled]}>{mutation.isPending ? <ActivityIndicator color="#FFFFFF" /> : <ThemedText style={styles.actionText}>{actionLabel}</ThemedText>}</Pressable>
           {data.is_creator && data.status !== 'cancelled' && data.status !== 'completed' && <Pressable accessibilityRole="button" disabled={cancel.isPending} onPress={() => Alert.alert(t('plan.cancelTitle'), t('plan.cancelBody'), [{ text: t('plan.keep'), style: 'cancel' }, { text: t('plan.cancelPlan'), style: 'destructive', onPress: () => cancel.mutate() }])} style={[styles.cancelAction, cancel.isPending && styles.disabled]}>{cancel.isPending ? <ActivityIndicator color="#B42318" /> : <ThemedText style={styles.cancelText}>{t('plan.cancelPlan')}</ThemedText>}</Pressable>}
           {!data.is_joined && <ThemedText type="small" themeColor="textSecondary">{t('plan.joinChatHelp')}</ThemedText>}
           <Pressable onPress={() => router.push({ pathname: '/safety/report', params: { targetType: 'plan', targetId: data.id, targetName: data.title } })} style={styles.reportPlan}><ThemedText type="small" style={styles.reportText}>{t('plan.report')}</ThemedText></Pressable>
         </ScrollView>
+        <AgePreferenceSheet visible={agePromptOpen} preferredAge={data.preferred_age} busy={join.isPending} error={join.error ? userFacingError(join.error, t('plan.membershipError')) : undefined} onConfirm={() => void confirmAgePreference()} onCancel={() => void cancelAgePreference()} />
       </SafeAreaView>
     </ThemedView>
   );

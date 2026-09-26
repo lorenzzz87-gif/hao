@@ -7,6 +7,7 @@ import { ThemedView } from '@/components/themed-view';
 import { Brand, Spacing } from '@/constants/theme';
 import type { NearbyPlan } from '@/types/nearby-plan';
 import { formatPlanTime } from '@/lib/format-date';
+import { AgeSummary } from '@/components/age-summary';
 
 function formatDistance(distanceM: number) {
   return distanceM < 1_000 ? `${Math.round(distanceM)} m` : `${(distanceM / 1_000).toFixed(1)} km`;
@@ -21,6 +22,7 @@ export function PlanCard({ plan }: { plan: NearbyPlan }) {
       <View style={styles.content}>
         <View style={styles.row}><ThemedText type="smallBold" style={styles.category}>{formatPlanTime(plan.startsAt)} · {plan.activityType}</ThemedText><ThemedText type="small" themeColor="textSecondary">{formatDistance(plan.distanceM)}</ThemedText></View>
         <ThemedText style={styles.title}>{plan.title}</ThemedText>
+        <AgeSummary summary={plan.ageSummary} preferredAge={plan.preferredAge} outsidePreference={plan.viewerOutsidePreferredAge} />
         <View style={styles.meta}><ThemedText type="small" themeColor="textSecondary">{plan.joinedCount}/{plan.maxParticipants} attending</ThemedText><Ionicons name="chevron-forward" size={18} color={Brand.slate} /></View>
       </View>
     </ThemedView>

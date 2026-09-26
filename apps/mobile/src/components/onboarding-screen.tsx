@@ -9,7 +9,7 @@ import { ThemedView } from '@/components/themed-view';
 import { MaxContentWidth, Spacing } from '@/constants/theme';
 import { supabase } from '@/lib/supabase';
 import i18n from '@/lib/i18n';
-import { userFacingError } from '@/lib/user-facing-error';
+import { ageValidationErrorKey, userFacingError } from '@/lib/user-facing-error';
 
 const languages = [{ code: 'en', label: 'English' }, { code: 'it', label: 'Italiano' }, { code: 'zh', label: '中文' }];
 
@@ -48,7 +48,10 @@ export function OnboardingScreen({ onCompleted }: { onCompleted: () => void }) {
       display_name: name.trim(), birth_date: birthDate, primary_language: language, interest_slugs: selected,
     });
     setBusy(false);
-    if (submitError) setError(userFacingError(submitError, t('onboarding.profileError')));
+    if (submitError) {
+      const errorKey = ageValidationErrorKey(submitError);
+      setError(errorKey ? t(errorKey) : userFacingError(submitError, t('onboarding.profileError')));
+    }
     else { await i18n.changeLanguage(language); onCompleted(); }
   }
 

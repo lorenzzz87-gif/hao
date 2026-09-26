@@ -1,3 +1,5 @@
+import type { AgeSummary, PreferredAge } from '@/types/age-band';
+
 export type NearbyPlan = {
   id: string;
   title: string;
@@ -11,5 +13,7 @@ export type NearbyPlan = {
   maxParticipants: number;
   status: 'open' | 'confirmed' | 'full';
   score: number;
+  preferredAge: PreferredAge;
+  ageSummary: AgeSummary | null;
+  viewerOutsidePreferredAge: boolean;
 };
-

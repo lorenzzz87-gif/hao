@@ -1,3 +1,5 @@
+import type { AgeSummary, PreferredAge } from '@/types/age-band';
+
 export type PlanMember = {
   id: string;
   display_name: string | null;
@@ -24,6 +26,9 @@ export type PlanDetail = {
   seats_remaining: number;
   is_joined: boolean;
   is_creator: boolean;
+  preferred_age: PreferredAge;
+  age_summary: AgeSummary | null;
+  viewer_outside_preferred_age: boolean;
   venue: { id: string | null; name: string | null; address: string | null; latitude: number; longitude: number; is_public_place: boolean | null; is_approximate?: boolean };
   members: PlanMember[];
 };

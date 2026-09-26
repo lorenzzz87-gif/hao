@@ -1,5 +1,5 @@
 begin;
-select plan(40);
+select plan(46);
 
 select has_extension('postgis', 'PostGIS is installed');
 select has_table('public', 'profiles', 'profiles exists');
@@ -8,12 +8,16 @@ select has_table('public', 'plan_members', 'plan_members exists');
 select has_table('public', 'successful_meets', 'successful_meets exists');
 select has_table('public', 'forming_groups', 'forming groups exists');
 select has_table('public', 'forming_group_members', 'forming group members exist');
+select has_table('public', 'age_prompt_events', 'age prompt analytics exists');
 select has_function('public', 'discover_nearby_plans', array['double precision', 'double precision', 'integer', 'timestamp with time zone', 'timestamp with time zone'], 'discovery RPC exists');
-select has_function('public', 'join_plan', array['uuid'], 'join RPC exists');
+select has_function('public', 'join_plan', array['uuid', 'boolean', 'uuid'], 'age-aware join RPC exists');
 select has_function('public', 'leave_plan', array['uuid'], 'leave RPC exists');
 select has_function('public', 'cancel_plan', array['uuid'], 'cancel plan RPC exists');
 select has_function('public', 'complete_onboarding', array['text', 'date', 'text', 'text[]'], 'onboarding RPC exists');
-select has_function('public', 'create_plan', array['text', 'timestamp with time zone', 'text', 'text', 'double precision', 'double precision', 'integer', 'text', 'text'], 'create plan RPC exists');
+select has_function('public', 'create_plan', array['text', 'timestamp with time zone', 'text', 'text', 'double precision', 'double precision', 'integer', 'text', 'text', 'text'], 'age-aware create plan RPC exists');
+select has_function('public', 'get_my_age_band', array[]::text[], 'private age-band RPC exists');
+select has_function('public', 'record_age_prompt_event', array['uuid', 'uuid', 'text'], 'age prompt analytics RPC exists');
+select has_function('private', 'plan_age_summary', array['uuid'], 'privacy-threshold age summary exists');
 select has_function('public', 'get_plan_detail', array['uuid'], 'plan detail RPC exists');
 select has_function('public', 'get_my_plan_chats', array[]::text[], 'chat summary RPC exists');
 select has_function('public', 'block_user', array['uuid'], 'block RPC exists');
@@ -32,6 +36,8 @@ select has_function('public', 'delete_my_account', array[]::text[], 'account del
 select has_function('public', 'review_report', array['uuid', 'report_status'], 'moderation review RPC exists');
 select has_column('public', 'profiles', 'terms_accepted_at', 'terms acceptance is recorded');
 select has_column('public', 'reports', 'moderation_due_at', 'reports have a 24-hour deadline');
+select has_column('public', 'plans', 'preferred_age', 'plans store a soft age preference');
+select has_trigger('public', 'profiles', 'profiles_lock_birth_date', 'birth dates are locked after onboarding');
 select has_trigger('public', 'plans', 'plans_approximate_location', 'plan coordinates are approximated');
 select has_trigger('public', 'venues', 'venues_approximate_location', 'unverified venue coordinates and addresses are protected');
 select has_trigger('public', 'plan_messages', 'plan_messages_moderate_ugc', 'chat content is filtered');

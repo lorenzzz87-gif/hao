@@ -16,3 +16,11 @@ export function userFacingError(error: unknown, fallback = 'Something went wrong
       : String(error ?? '');
   return messages.find(([pattern]) => pattern.test(raw))?.[1] ?? fallback;
 }
+
+export function ageValidationErrorKey(error: unknown) {
+  const raw = error instanceof Error ? error.message : typeof error === 'object' && error && 'message' in error ? String(error.message) : String(error ?? '');
+  if (/underage|must_be_18_or_older/i.test(raw)) return 'errors.underage';
+  if (/invalid_birth_date|date\/time field value out of range|invalid input syntax for type date/i.test(raw)) return 'errors.invalidBirthDate';
+  if (/birth_date_locked/i.test(raw)) return 'errors.birthDateLocked';
+  return null;
+}
