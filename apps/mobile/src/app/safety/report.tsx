@@ -2,21 +2,18 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTranslation } from 'react-i18next';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { MaxContentWidth, Spacing } from '@/constants/theme';
 import { type ReportReason, type ReportTarget, useBlockUser, useReportTarget } from '@/hooks/use-safety';
+import { userFacingError } from '@/lib/user-facing-error';
 
-const reasons: { value: ReportReason; label: string }[] = [
-  { value: 'harassment', label: 'Harassment' },
-  { value: 'hate_or_abuse', label: 'Hate or abuse' },
-  { value: 'unsafe_meetup', label: 'Unsafe meetup' },
-  { value: 'spam_or_scam', label: 'Spam or scam' },
-  { value: 'other', label: 'Something else' },
-];
+const reasons: ReportReason[] = ['harassment', 'hate_or_abuse', 'unsafe_meetup', 'spam_or_scam', 'other'];
 
 export default function ReportScreen() {
+  const { t } = useTranslation();
   const params = useLocalSearchParams<{ targetType: ReportTarget; targetId: string; targetName?: string }>();
   const router = useRouter();
   const targetType = Array.isArray(params.targetType) ? params.targetType[0] : params.targetType;
@@ -41,24 +38,24 @@ export default function ReportScreen() {
 
   const confirmBlock = () => {
     if (!targetId) return;
-    Alert.alert('Block this person?', 'You will no longer see each other in discovery or shared plan surfaces.', [
-      { text: 'Cancel', style: 'cancel' },
-      { text: 'Block person', style: 'destructive', onPress: () => void block.mutateAsync(targetId).then(() => router.replace('/')).catch(() => undefined) },
+    Alert.alert(t('report.blockTitle'), t('report.blockBody'), [
+      { text: t('report.cancel'), style: 'cancel' },
+      { text: t('report.blockPerson'), style: 'destructive', onPress: () => void block.mutateAsync(targetId).then(() => router.replace('/')).catch(() => undefined) },
     ]);
   };
 
-  if (!validTarget) return <ThemedView style={styles.center}><ThemedText type="smallBold">Invalid report target</ThemedText><Pressable onPress={() => router.back()}><ThemedText type="linkPrimary">Go back</ThemedText></Pressable></ThemedView>;
-  if (submitted) return <ThemedView style={styles.center}><ThemedText type="subtitle">Report received</ThemedText><ThemedText themeColor="textSecondary" style={styles.centerText}>Our moderation team will review it. Reports do not automatically ban someone.</ThemedText><Pressable onPress={() => router.back()} style={styles.primary}><ThemedText style={styles.primaryText}>Done</ThemedText></Pressable></ThemedView>;
+  if (!validTarget) return <ThemedView style={styles.center}><ThemedText type="smallBold">{t('report.invalid')}</ThemedText><Pressable onPress={() => router.back()}><ThemedText type="linkPrimary">{t('report.goBack')}</ThemedText></Pressable></ThemedView>;
+  if (submitted) return <ThemedView style={styles.center}><ThemedText type="subtitle">{t('report.received')}</ThemedText><ThemedText themeColor="textSecondary" style={styles.centerText}>{t('report.receivedBody')}</ThemedText><Pressable onPress={() => router.back()} style={styles.primary}><ThemedText style={styles.primaryText}>{t('report.done')}</ThemedText></Pressable></ThemedView>;
 
   return (
     <ThemedView style={styles.screen}><SafeAreaView style={styles.safeArea}><ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-      <Pressable onPress={() => router.back()}><ThemedText type="linkPrimary">Cancel</ThemedText></Pressable>
-      <View style={styles.heading}><ThemedText type="subtitle">Report {targetType}</ThemedText><ThemedText themeColor="textSecondary">{targetName ? `Tell us what happened with ${targetName}.` : 'Tell us what happened.'} The reported person will not be told who submitted it.</ThemedText></View>
-      <View style={styles.options}>{reasons.map((item) => <Pressable accessibilityRole="radio" accessibilityState={{ checked: reason === item.value }} key={item.value} onPress={() => setReason(item.value)} style={[styles.option, reason === item.value && styles.selected]}><ThemedText type="smallBold">{item.label}</ThemedText></Pressable>)}</View>
-      <View style={styles.field}><ThemedText type="smallBold">Details (optional)</ThemedText><TextInput value={details} onChangeText={setDetails} maxLength={1000} multiline placeholder="Add context that will help the review" placeholderTextColor="#777777" style={styles.input} /><ThemedText type="small" themeColor="textSecondary">{details.length}/1000</ThemedText></View>
-      {report.error && <ThemedText type="small" style={styles.error}>{report.error.message}</ThemedText>}
-      <Pressable disabled={!reason || report.isPending} onPress={() => void submit()} style={[styles.primary, (!reason || report.isPending) && styles.disabled]}>{report.isPending ? <ActivityIndicator color="#FFFFFF" /> : <ThemedText style={styles.primaryText}>Submit report</ThemedText>}</Pressable>
-      {targetType === 'user' && <View style={styles.blockArea}><ThemedText type="smallBold">Need immediate separation?</ThemedText><ThemedText type="small" themeColor="textSecondary">Blocking takes effect immediately and is separate from reporting.</ThemedText>{block.error && <ThemedText type="small" style={styles.error}>{block.error.message}</ThemedText>}<Pressable disabled={block.isPending} onPress={confirmBlock} style={styles.blockButton}><ThemedText style={styles.blockText}>{block.isPending ? 'Blocking…' : 'Block person'}</ThemedText></Pressable></View>}
+      <Pressable onPress={() => router.back()}><ThemedText type="linkPrimary">{t('report.cancel')}</ThemedText></Pressable>
+      <View style={styles.heading}><ThemedText type="subtitle">{t(`report.title.${targetType}`)}</ThemedText><ThemedText themeColor="textSecondary">{targetName ? t('report.withName', { name: targetName }) : t('report.whatHappened')} {t('report.private')}</ThemedText></View>
+      <View style={styles.options}>{reasons.map((item) => <Pressable accessibilityRole="radio" accessibilityState={{ checked: reason === item }} key={item} onPress={() => setReason(item)} style={[styles.option, reason === item && styles.selected]}><ThemedText type="smallBold">{t(`report.reason.${item}`)}</ThemedText></Pressable>)}</View>
+      <View style={styles.field}><ThemedText type="smallBold">{t('report.details')}</ThemedText><TextInput accessibilityLabel={t('report.details')} value={details} onChangeText={setDetails} maxLength={1000} multiline placeholder={t('report.detailsPlaceholder')} placeholderTextColor="#777777" style={styles.input} /><ThemedText type="small" themeColor="textSecondary">{details.length}/1000</ThemedText></View>
+      {report.error && <ThemedText type="small" style={styles.error}>{userFacingError(report.error, t('report.submitError'))}</ThemedText>}
+      <Pressable disabled={!reason || report.isPending} onPress={() => void submit()} style={[styles.primary, (!reason || report.isPending) && styles.disabled]}>{report.isPending ? <ActivityIndicator color="#FFFFFF" /> : <ThemedText style={styles.primaryText}>{t('report.submit')}</ThemedText>}</Pressable>
+      {targetType === 'user' && <View style={styles.blockArea}><ThemedText type="smallBold">{t('report.separation')}</ThemedText><ThemedText type="small" themeColor="textSecondary">{t('report.blockHelp')}</ThemedText>{block.error && <ThemedText type="small" style={styles.error}>{userFacingError(block.error, t('report.blockError'))}</ThemedText>}<Pressable disabled={block.isPending} onPress={confirmBlock} style={styles.blockButton}><ThemedText style={styles.blockText}>{block.isPending ? t('report.blocking') : t('report.blockPerson')}</ThemedText></Pressable></View>}
     </ScrollView></SafeAreaView></ThemedView>
   );
 }

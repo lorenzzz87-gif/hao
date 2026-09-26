@@ -11,6 +11,7 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTranslation } from 'react-i18next';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -21,10 +22,12 @@ import { DEMO_USER_ID } from '@/lib/demo-chat';
 import { useSessionStore } from '@/stores/session-store';
 import type { PlanMessage } from '@/types/plan-message';
 import { useTranslateContent } from '@/hooks/use-translation';
+import { userFacingError } from '@/lib/user-facing-error';
 
-const quickReplies = ["I'm on my way", "I'm here", "I'll be 5 min late", "Can't make it"] as const;
+const quickReplies = ['onWay', 'here', 'late', 'cantMake'] as const;
 
 export default function PlanChatScreen() {
+  const { t } = useTranslation();
   const params = useLocalSearchParams<{ planId: string }>();
   const router = useRouter();
   const planId = Array.isArray(params.planId) ? params.planId[0] : params.planId;
@@ -39,8 +42,8 @@ export default function PlanChatScreen() {
   const translation = useTranslateContent();
   const listRef = useRef<FlatList<PlanMessage>>(null);
   const memberNames = useMemo(
-    () => new Map(plan.data?.members.map((member) => [member.id, member.display_name ?? 'HAO member']) ?? []),
-    [plan.data?.members],
+    () => new Map(plan.data?.members.map((member) => [member.id, member.display_name ?? t('chat.member')]) ?? []),
+    [plan.data?.members, t],
   );
 
   const send = async (body: string, type: 'text' | 'quick_action') => {
@@ -61,9 +64,9 @@ export default function PlanChatScreen() {
   if (messages.error || plan.error || !plan.data?.is_joined) {
     return (
       <ThemedView style={styles.center}>
-        <ThemedText type="smallBold">Chat unavailable</ThemedText>
-        <ThemedText type="small" themeColor="textSecondary">{messages.error?.message ?? plan.error?.message ?? 'Join this plan to access its group chat.'}</ThemedText>
-        <Pressable onPress={() => router.back()}><ThemedText type="linkPrimary">Go back</ThemedText></Pressable>
+        <ThemedText type="smallBold">{t('chat.unavailable')}</ThemedText>
+        <ThemedText type="small" themeColor="textSecondary">{userFacingError(messages.error ?? plan.error, t('chat.joinRequired'))}</ThemedText>
+        <Pressable onPress={() => router.back()}><ThemedText type="linkPrimary">{t('chat.goBack')}</ThemedText></Pressable>
       </ThemedView>
     );
   }
@@ -73,8 +76,8 @@ export default function PlanChatScreen() {
       <SafeAreaView style={styles.safeArea}>
         <KeyboardAvoidingView style={styles.keyboard} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
           <View style={styles.header}>
-            <Pressable onPress={() => router.back()}><ThemedText type="linkPrimary">Back</ThemedText></Pressable>
-            <View style={styles.headerCopy}><ThemedText type="smallBold" numberOfLines={1}>{plan.data.title}</ThemedText><ThemedText type="small" themeColor="textSecondary">{plan.data.joined_count} people</ThemedText></View>
+            <Pressable onPress={() => router.back()}><ThemedText type="linkPrimary">{t('chat.back')}</ThemedText></Pressable>
+            <View style={styles.headerCopy}><ThemedText type="smallBold" numberOfLines={1}>{plan.data.title}</ThemedText><ThemedText type="small" themeColor="textSecondary">{t('chat.people', { count: plan.data.joined_count })}</ThemedText></View>
           </View>
           <FlatList
             ref={listRef}
@@ -82,26 +85,26 @@ export default function PlanChatScreen() {
             keyExtractor={(item) => item.id}
             contentContainerStyle={styles.messages}
             onContentSizeChange={() => listRef.current?.scrollToEnd({ animated: true })}
-            ListEmptyComponent={<ThemedText type="small" themeColor="textSecondary" style={styles.empty}>Say hello and coordinate the meetup.</ThemedText>}
+            ListEmptyComponent={<ThemedText type="small" themeColor="textSecondary" style={styles.empty}>{t('chat.empty')}</ThemedText>}
             renderItem={({ item }) => {
               if (item.message_type === 'system') return <ThemedText type="small" themeColor="textSecondary" style={styles.system}>{item.body}</ThemedText>;
               const own = item.sender_id === userId;
               return (
                 <View style={[styles.messageRow, own && styles.ownMessageRow]}>
-                  {!own && <ThemedText type="small" themeColor="textSecondary">{item.sender_id ? memberNames.get(item.sender_id) ?? 'HAO member' : 'HAO'}</ThemedText>}
-                  <Pressable disabled={own} onLongPress={demoMode ? undefined : () => router.push({ pathname: '/safety/report', params: { targetType: 'message', targetId: item.id, targetName: 'this message' } })}><View style={[styles.bubble, own && styles.ownBubble]}><ThemedText style={own ? styles.ownText : undefined}>{translations[item.id] ?? item.body}</ThemedText>{translations[item.id] && <ThemedText type="small" style={own ? styles.ownOriginal : styles.original}>Original: {item.body}</ThemedText>}</View></Pressable>
-                  {!demoMode && <View style={styles.messageTools}><Pressable disabled={translation.isPending} onPress={() => void translation.mutateAsync({ contentType: 'message', contentId: item.id }).then((result) => setTranslations((current) => ({ ...current, [item.id]: result.translatedText }))).catch(() => undefined)}><ThemedText type="small" style={styles.toolText}>{translation.isPending ? 'Translating…' : 'Translate'}</ThemedText></Pressable>{!own && <ThemedText type="small" themeColor="textSecondary">Press and hold to report</ThemedText>}</View>}
+                  {!own && <ThemedText type="small" themeColor="textSecondary">{item.sender_id ? memberNames.get(item.sender_id) ?? t('chat.member') : 'HAO'}</ThemedText>}
+                  <Pressable disabled={own} onLongPress={demoMode ? undefined : () => router.push({ pathname: '/safety/report', params: { targetType: 'message', targetId: item.id, targetName: t('chat.thisMessage') } })}><View style={[styles.bubble, own && styles.ownBubble]}><ThemedText style={own ? styles.ownText : undefined}>{translations[item.id] ?? item.body}</ThemedText>{translations[item.id] && <ThemedText type="small" style={own ? styles.ownOriginal : styles.original}>{t('chat.original')}: {item.body}</ThemedText>}</View></Pressable>
+                  {!demoMode && <View style={styles.messageTools}><Pressable disabled={translation.isPending} onPress={() => void translation.mutateAsync({ contentType: 'message', contentId: item.id }).then((result) => setTranslations((current) => ({ ...current, [item.id]: result.translatedText }))).catch(() => undefined)}><ThemedText type="small" style={styles.toolText}>{translation.isPending ? t('chat.translating') : t('chat.translate')}</ThemedText></Pressable>{!own && <ThemedText type="small" themeColor="textSecondary">{t('chat.holdReport')}</ThemedText>}</View>}
                 </View>
               );
             }}
           />
           <View style={styles.composer}>
-            <View style={styles.quickReplies}>{quickReplies.map((reply) => <Pressable key={reply} disabled={sendMessage.isPending} onPress={() => void send(reply, 'quick_action')} style={styles.quickReply}><ThemedText type="small">{reply}</ThemedText></Pressable>)}</View>
-            {sendMessage.error && <ThemedText type="small" style={styles.error}>{sendMessage.error.message}</ThemedText>}
-            {!demoMode && (translation.error || translation.languageError) && <ThemedText type="small" style={styles.error}>{translation.error?.message ?? translation.languageError?.message}</ThemedText>}
+            <View style={styles.quickReplies}>{quickReplies.map((reply) => <Pressable key={reply} disabled={sendMessage.isPending} onPress={() => void send(t(`chat.quick.${reply}`), 'quick_action')} style={styles.quickReply}><ThemedText type="small">{t(`chat.quick.${reply}`)}</ThemedText></Pressable>)}</View>
+            {sendMessage.error && <ThemedText type="small" style={styles.error}>{userFacingError(sendMessage.error, t('chat.sendError'))}</ThemedText>}
+            {!demoMode && (translation.error || translation.languageError) && <ThemedText type="small" style={styles.error}>{userFacingError(translation.error ?? translation.languageError, t('chat.translationError'))}</ThemedText>}
             <View style={styles.inputRow}>
-              <TextInput value={draft} onChangeText={setDraft} maxLength={2000} multiline placeholder="Message the group" placeholderTextColor="#777777" style={styles.input} />
-              <Pressable accessibilityRole="button" disabled={!draft.trim() || sendMessage.isPending} onPress={() => void send(draft, 'text')} style={[styles.send, (!draft.trim() || sendMessage.isPending) && styles.disabled]}><ThemedText style={styles.sendText}>Send</ThemedText></Pressable>
+              <TextInput accessibilityLabel={t('chat.messageInput')} value={draft} onChangeText={setDraft} maxLength={2000} multiline placeholder={t('chat.messageInput')} placeholderTextColor="#777777" style={styles.input} />
+              <Pressable accessibilityRole="button" disabled={!draft.trim() || sendMessage.isPending} onPress={() => void send(draft, 'text')} style={[styles.send, (!draft.trim() || sendMessage.isPending) && styles.disabled]}><ThemedText style={styles.sendText}>{t('chat.send')}</ThemedText></Pressable>
             </View>
           </View>
         </KeyboardAvoidingView>
