@@ -1,5 +1,6 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { ActivityIndicator, Pressable, StyleSheet } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTranslation } from 'react-i18next';
 
 import AppTabs from '@/components/app-tabs';
@@ -12,6 +13,9 @@ import { supabase } from '@/lib/supabase';
 import { useSessionStore } from '@/stores/session-store';
 import i18n from '@/lib/i18n';
 import { userFacingError } from '@/lib/user-facing-error';
+import { withTimeout } from '@/lib/with-timeout';
+
+const PROFILE_LOAD_TIMEOUT_MS = 8_000;
 
 export function AppGate() {
   const { t } = useTranslation();
@@ -20,11 +24,16 @@ export function AppGate() {
   const initialized = useSessionStore((state) => state.initialized);
   const demoMode = useSessionStore((state) => state.demoMode);
   const session = useSessionStore((state) => state.session);
+  const setDemoMode = useSessionStore((state) => state.setDemoMode);
   const profile = useQuery({
     queryKey: ['my-profile', session?.user.id],
     enabled: Boolean(session) && !demoMode,
     queryFn: async () => {
-      const result = await supabase.from('profiles').select('onboarding_completed,primary_language').eq('id', session!.user.id).single();
+      const result = await withTimeout(
+        supabase.from('profiles').select('onboarding_completed,primary_language').eq('id', session!.user.id).single(),
+        PROFILE_LOAD_TIMEOUT_MS,
+        'profile_load_timeout',
+      );
       if (result.error) throw result.error;
       if (result.data.primary_language) await i18n.changeLanguage(result.data.primary_language);
       return result.data;
@@ -40,6 +49,7 @@ export function AppGate() {
         <ThemedText type="subtitle">{t('gate.profileTitle')}</ThemedText>
         <ThemedText themeColor="textSecondary">{userFacingError(profile.error, t('gate.profileError'))}</ThemedText>
         <Pressable onPress={() => void profile.refetch()} style={styles.action}><ThemedText style={styles.actionText}>{t('tryAgain')}</ThemedText></Pressable>
+        <Pressable onPress={() => { setDemoMode(true); void AsyncStorage.setItem('now-demo-mode', 'enabled'); }}><ThemedText type="linkPrimary">{t('gate.testAccess')}</ThemedText></Pressable>
         <Pressable onPress={() => void supabase.auth.signOut()}><ThemedText type="small">{t('profile.signOut')}</ThemedText></Pressable>
       </ThemedView>
     );
